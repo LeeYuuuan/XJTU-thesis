@@ -1,337 +1,153 @@
 % !TeX root = ../main.tex
 
-\xchapter{浮动体：图表}{Floating: Figures, Tables}
+\xchapter{生成式EIT图像重建算法理论基础}{Theory of Generative EIT Reconstruction Algorithm}
 
-请先注意，在\LaTeX 中，图表不一定要像 Word 一样被固定在某个区域，程序会自动根据上下文为图片选择合适的位置，同时还有具有超链接的交叉引用自动定位图片位置，因此不要强求图片或表格一定处于某个位置。如非要定位，则应在浮动体环境中使用\clist{[H]}选项指定位置。
+EIT 技术是一种根据场域内部电导率分布情况获取场域内部信息的成像技术。该技术由
+于其非侵入、无损伤等优势，近年来得到了广泛的应用。然而，EIT 图像重建算法由于其固
+有的不足而限制的其使用场景。因此，如何提高重建图像的分辨率，并加快重建的速度，是
+目前 EIT 技术的瓶颈。
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 图、表、公式等一律用阿拉伯数字分章连续编号，如 图1-3、表2-1、（3-2）等。图、表、公式等与正文之间间隔0.5行。
+近年来，深度学习技术，尤其是生成式模型，取得了突破性的成果，这也为提高 EIT 图
+像重建质量提供了新的研究方向。不同与计算机视觉领域的其他图像生成任务（如利用文本
+生成图像、图像分类、图像识别等），EIT 技术具有完备的数学物理模型，这就为基于深度学
+习的 EIT 图像重建模型提供了大量的仿真数据支持。然而，由于其性能直接影响了临床医生
+对于病情的判断，因此 EIT 图像重建算法的广泛应用需要确保其效率及可行性。
 
-    \item 图应有图题，表应有表题，并分别置于图号和表号之后，图号和图题应置于图下方的居中位置，表号和表题应置于表上方的居中位置。引用图或表应在图题或表题右上角标出文献来源。
+本章将主要介绍 EIT 图像重建算法的数学原理，深度学习和生成式模型的常见构件及模
+型结构。随后将重点对两者之间结合的可行性以及优势作出阐述，为构建基于生成式模型的
+EIT 图像重建算法提供理论基础。
 
-    \item 若图或表中有附注，采用英文小写字母顺序编号，附注写在图或表的下方。
-  \end{enumerate}
-\end{tcolorbox}
+\xsection{EIT基本原理}{Basic Principle of EIT}
 
-\xsection{图}{Figures}
+\xsubsection{EIT问题模型}{Model of EIT Problem}
+在工程数学领域通常对事物内部的特征进行参数化，用模型参数$\boldsymbol{m}$来表示，它属于模型参数域$M$。
+这些参数在工程实践中通常难以观测得到。
+因此会选取一些与该模型参数有显著相关性的可观测参数$\boldsymbol{d}$来推断得到模型参数，
+其中$\boldsymbol{d}$属于可测量参数域$D$。
+则正问题可被描述为通过已知的模型参数$\boldsymbol{m}$求解可测量参数$\boldsymbol{d}$，即\cref{equation:forward}
+\begin{equation}
+  \label{equation:forward}
+  \boldsymbol{d} = h(\boldsymbol{m})
+\end{equation}
+特别的，线性正问题可被描述为\cref{equation:linear_forward}
+\begin{equation}
+  \label{equation:linear_forward}
+  \boldsymbol{d} = \boldsymbol{H}\boldsymbol{m}
+\end{equation}
+其中，$\boldsymbol{H}$为矩阵算子。
+则逆问题则被描述为已知测量参数$\boldsymbol{d}$求解模型参数$\boldsymbol{m}$的过程。
 
+然而，在实际的工程中，往往无法直接获得逆问题的精确解，或根本不可能获得唯一的精确解，
+即不可能满足\cref{equation:error}这是由于实际问题中的每一步都存在一定的误差。
+\begin{equation}
+  \label{equation:error}
+  h(\boldsymbol{m}) - \boldsymbol{d} = 0
+\end{equation}
 
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 插图须紧跟文述。在正文中，一般应先见图号及图的内容后再见图，一般情况下不能提前见图，特殊情况须延后的插图不应跨节；
-    \item 提供照片应大小适宜，主题明确，层次清楚，金相照片一定要有比例尺；
-    \item 图应具有“自明性”，即只看图、图题和图例，不阅读正文，就可理解图意。图中的标目是说明坐标轴物理意义的项目，它是由物理量的符号或名称和相应的单位组成。物理量的符号由斜体字母标注，单位的符号使用正体字母标注，量与单位间用斜线隔开。例如：$I/\SI{}{A}$，$\rho/\SI{}{kg\cdot m^{-3}}$，$F/\SI{}{N}$，$v/\SI{}{m\cdot s^{-1}}$等等；
-    \item 图中用字为五号，如排列过密，用五号字有困难时，可小于五号字，但不得小于七号字；
-    \item 图尺寸的\textbf{一般宽高比}应为 \SI{6.67}{cm}$\times$\SI{5.00}{cm}。特殊情况下，也可为 \SI{9.00}{cm}$\times$\SI{6.75}{cm}，或 \SI{13.5}{cm}$\times$\SI{9.00}{cm}。总之，一篇论文中，同类图片的大小应该一致，编排美观、整齐；
-    \item 一幅图如有若干幅\textbf{分图}，均应编分图号，用(a)，(b)，(c),...... 按顺序编排，且各分图的分题注直接列在各自分图的正下方，总题注列在所有分图的下方正中「
-  \end{enumerate}
-\end{tcolorbox}
+特别的，对于EIT而言，其成像目标是待测场内部的电导率分布。该技术通过向未知场内注入电流，同时测
+量其边界电压分布，利用麦克斯韦方程组求解出其场域内部的电导率（或阻抗，注：由于电
+导率和电阻抗之间为倒数关系，可相互转换。虽 EIT 名为电阻抗断层成像，但在实际 EIT 的
+研究中，通常利用电导率分布作为重建图像的直接依据，故如无特殊说明，本文的成像目标
+均为电导率）分布，最后根据其内部的电导率分布重建出图像。
+EIT 问题的研究可分为 EIT 正问题和 EIT 逆问题。EIT 正
+问题是指已知待测场内部的电导率分布及其边界电流驱动信号，求解其内部或边界的电压或
+电流分布。EIT 逆问题则是指已知场域边界的测量电压以及驱动信号，求解场域内部的电导
+率分布情况。
 
-\xsubsection{单张图片的使用}{Single Figure}
+EIT 问题属于电磁场分析问题，其电导率分布、注入电流以及测量电压之间可根据麦克斯
+韦(Maxwell)方程组
+\begin{equation}
+\label{equation:Maxwell}
+    \begin{aligned}
+        \nabla \times \boldsymbol{H} &= J + \frac{\partial{D}}{\partial{t}} \\
+        \nabla \cdot \boldsymbol{D} &= \rho \\
+        \nabla \cdot \boldsymbol{B} &= 0 \\
+        \nabla \times\boldsymbol{E} &= -\frac{\partial \boldsymbol{B}}{\partial t} \\   
+    \end{aligned}
+\end{equation}
 
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \centering
-    \includegraphics[width=.5\textwidth]{xjtu.pdf}
-    \caption{校徽}
-  \end{figure}
-\end{texcodeonly}
+其中，$\nabla$为矢量微分算子(泊松算子)，$\boldsymbol{H}$ 为磁场强度，$\boldsymbol{J}$ 为电流密度，$\boldsymbol{D}$
+为电位移，$\boldsymbol{E}$ 为电场强度，$\boldsymbol{B}$为磁通量密度， $t$为时间，$\rho$为区域内的电荷密度.
+在各向同性的电磁场中，$\boldsymbol{J}$、$\boldsymbol{E}$、$\boldsymbol{B}$、$\boldsymbol{D}$、$\boldsymbol{H}$之间满足以下关系（介质的本构关系），
+\begin{equation}
+  \label{equation:Maxwell_relation}
+  \begin{aligned}
+    \boldsymbol{D} &= \varepsilon\boldsymbol{E}\\
+    \boldsymbol{B} & = \mu\boldsymbol{E}\\
+    \boldsymbol{J} & = \sigma\boldsymbol{E}\\
+  \end{aligned}
+\end{equation}
+式中，$\varepsilon$是介电常数，$\mu$是介质的磁导率，$\sigma$是电导率。
 
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.5\textwidth]{xjtu.pdf}
-  \caption{校徽}
-\end{figure}
+为简化 EIT 问题的求解步骤，通常作以下假设：
+\begin{enumerate}
+  \item EIT 敏感场可被看作是似稳场。即 EIT 场域内部任意一点的电流在激励信号的作用下同
+  时产生相应的变化。也就是说可以忽其场域内介电常数和位移电流的影响。
+  \item EIT 场域内部不存在其他与外部激励信号频率相同的电流源。即场域内部不存在涡流效
+  应，任意位置电流密度的散度为 0。
+  \item 假设激励电流仅流经单排电极所在的平面。即研究二维 EIT 问题，以降低问题的复杂性，
+  提高计算效率。
+\end{enumerate}
+根据以上假设，EIT 模型还满足：
+\begin{equation}
+  \label{equation:Maxwell_hp}
+  \nabla \cdot \boldsymbol{J} = 0
+\end{equation}
+而电场强度$\boldsymbol{E}$和电位$\phi$之间满足
+\begin{equation}
+  \label{equation:Maxwell_EP}
+  \boldsymbol{E} = - \nabla \phi
+\end{equation}
+则由式\cref{equation:Maxwell}、\cref{equation:Maxwell_EP}、\cref{equation:Maxwell_hp}、\cref{equation:Maxwell_relation}
+可得拉普拉斯方程：
+\begin{equation}
+  \nabla \cdot (\sigma\nabla\phi) = 0
+\end{equation}
+上式即为EIT敏感场的数学模型。
 
-一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。一些图片下方的文字。
+则对于连续的已知平面$\Omega$上的EIT模型，则其电压分布$u(x,y)$满足如下方程和边界条件：
+\begin{equation}
+  \begin{aligned}
+  &\nabla \cdot (\sigma \nabla \phi) = 0, &(x, y)\in {\Omega} \\
+  &\sigma\frac{\partial{u}}{\partial{v}} = \psi, &(x,y) \in {\partial{\Omega}} \\
+  &\phi = \varphi, &(x,y)\in\partial{\Omega} \\
+\end{aligned}
+\end{equation}
+其中，其内部电导率分布$\sigma(x,y) > 0$ ，边界电流密度$\psi(x,y)$，边界电压$\phi(x,y)$，边界电压$\varphi(x,y)$均是关于场域内部任意一点($x,y)$的函数。
+若给定$\sigma(x,y)$和$\psi(x,y)$，则可由方程组确定出$u(x,y)$，即诺伊曼边界值问题。
+若给定$\sigma(x,y)$和$\rho(x,y)$，求解$u(x,y)$，则为迪利克雷边界值问题。
+上述两个问题称为EIT正问题。而实际EIT问题需要求解逆问题，即已知边界电压$\rho$和电流$\psi$求解电导率分布$\sigma(x,y)$。
 
-\xsubsection{多张图片：应该使用 subcaption 而不是 subfigure}{Use subcaption instead of subfigure}
+电导率分布$\sigma(x,y)$确定了从可能的电流密度集合$\Psi$到和电压分布集合$\Phi$的映射。
+\begin{equation}
+  F_\sigma: \psi(x,y) \rightarrow \phi(x,y)
+\end{equation}
+EIT问题即是在已知 $F_{\sigma} = F_0$的条件下求解 $\sigma(x,y)$，使得
+\begin{equation}
+  F_{\sigma}(\psi) = F_{0}(\psi),  \forall \psi \in \Psi
+\end{equation}
+在实际求解中，通常求解出EIT的解析解非常困难，因此通常使用基于有限元的迭代方法求解出其近似解，EIT有限元模型如下图所示
 
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=.5\textwidth]{xjtu.pdf}
-        \subcaption{校名}
-    \end{subfigure}
-    \begin{subfigure}[b]{0.49\linewidth}
-        \centering
-        \includegraphics[width=.5\textwidth]{xjtu.pdf}
-        \subcaption{校名}
-        \label{subfigure:icon}
-    \end{subfigure}
-    \caption{校徽}
-    \label{fig:icon}
-  \end{figure}
-\end{texcodeonly}
-
-\begin{figure}[h]
-  \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-  \end{subfigure}
-  \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-      \label{subfigure:icon}
-  \end{subfigure}
-  \caption{校徽}
-  \label{figure:icon}
-\end{figure}
-
-\xsubsection{多张子图分页}{Break multiple figures}
-
-\newcommand{\subfigg}{
-  \begin{subfigure}[b]{0.49\linewidth}
-    \centering
-    \includegraphics[width=.5\textwidth]{xjtu.pdf}
-    \subcaption{校名}
-  \end{subfigure}
-}
-
-为了简化叙述，定义一个命令 \clist{\subfigg} 代表插入一个子图：
-\begin{texcodeonly}[]{}
-  \newcommand{\subfigg}{
-    \begin{subfigure}[b]{0.49\linewidth}
-      \centering
-      \includegraphics[width=.5\textwidth]{xjtu.pdf}
-      \subcaption{校名}
-    \end{subfigure}
-  }
-\end{texcodeonly}
-
-在\clist[columbiablue]{subfig}宏包中提供了\clist{\ContinuedFloat}命令，使一个浮动体环境与其内子图的编号跟随前一个子图，此时两个浮动体环境可以分别设置标题，若具有相同的标题，或后续图的标题设置为 \clist{（续）}，则可以实现子图分页的效果。同时，模板提供了 \clist{\floatcontinue} ，通过包装\clist{\ContinuedFloat}使得子图在此命令处断页，不产生图标题，并在下一页生成图题。此两种命令均可使用，按照喜欢或需求使用。
-\clearpage
-\subsubsection{使用 ContinuedFloat}
-
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \subfigg    \subfigg
-    \caption{校徽}
-  \end{figure}
+则可设单元场域为\cref{figures:FEM}所示，三角形单元各顶点$M_1(x_1,y_1)$，$M_2(x_2,y_2)$，$M_3(x_3,y_3)$的电位分别为
+$\Phi_1$,$\Phi_2$,$\Phi_3$。
+\\
+\begin{tikzpicture}[scale=1.5]
+  \label{figures:FEM}
+  \caption{三角形单元}
+  % 坐标轴
+  \draw[->] (-1,0) -- (3,0) node[right] {$x$};
+  \draw[->] (0,-1) -- (0,3) node[above] {$y$};
   
-  \begin{figure}[H]
-    \ContinuedFloat
-    \subfigg    \subfigg
-    \subfigg    \subfigg
-    \caption{校徽} % 或 \caption{（续）}
-  \end{figure}
-\end{texcodeonly}
+  % 三角形
+  \coordinate (M1) at (2,1);
+  \coordinate (M2) at (2.5,2.5);
+  \coordinate (M3) at (1.5,2);
 
-\begin{figure}[h]
-  \subfigg    \subfigg
-  \caption{校徽}
-\end{figure}
-
-\begin{figure}[H]
-  \ContinuedFloat
-  \subfigg    \subfigg
-  \subfigg    \subfigg
-  \caption{校徽} % 或 \caption{（续）}
-\end{figure}
-
-\subsubsection{使用 floatcontinue}
-
-\begin{texcodeonly}[]{}
-  \begin{figure}[h]
-    \subfigg    \subfigg
-    \floatcontinue{tb}
-    \subfigg    \subfigg
-    \subfigg    \subfigg
-    \caption{校徽}
-  \end{figure}
-\end{texcodeonly}
-
-\begin{figure}[h]
-  \subfigg    \subfigg
-  \floatcontinue{tb}
-  \subfigg    \subfigg
-  \subfigg    \subfigg
-  \caption{校徽}
-\end{figure}
+  \draw  (M1) node[right] {$M_1(x_1,y_1)$} -- (M2) node[above right] {$M_2(x_2,y_2)$} -- (M3) node[above left] {$M_3(x_3,y_3)$} -- cycle;
+\end{tikzpicture}
 
 
-\clearpage
-
-\xsection{表}{Tables}
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 如某个表需要转页接排，在随后的各页上应重复表的编号。编号后跟表题（可省略）和“（续）”，如表 1-1（续），续表均应重复表头和关于单位的陈述。表格的设计应紧跟文述。表的编排一般是内容和测试项目由左至右横读，数据依序竖读，应有自明性。若为大表或作为工具使用的表格，可作为附表在附录中给出，论文中的表格参数应标明量和单位的符号；
-    \item 表中各物理量及量纲均按国际标准(SI) 及国家规定的法定符号和法定计量单位标注；
-    \item 一律使用三线表，与文字齐宽，顶线与底线线粗为 $1.5$ pt，中线线粗是 $1$ pt；
-    \item 使用他人表格须注明出处。
-    \item 表中用字为五号字体。如排列过密，用五号字有困难时，可小于五号字，但不小于七号。
-    \item 表格必须通栏，即表格宽度与正文版面平齐。
-  \end{enumerate}
-\end{tcolorbox}
 
 
-\xsubsection{普通表格}{Normal Tables}
 
 
-考虑到使用成本、内容与样式分离。模板默认调用现代化的表格绘制宏包 \clist[columbiablue]{tabularray}。该宏包的使用方法请使用 \clist{texdoc tabularray}，网上也有此手册的中文翻译。请确保使用的发行版包含这一宏包（即更新至 2023 及以后的版本）。
-
-非跨页表格应使用 tblr 环境制作表格，使用 table 作为浮动体环境，使用 \clist{\toprule}，\clist{\midrule} 和 \clist{\bottomrule} 指定三线表的三条线：
-
-\begin{texcode}[]{}
-    \begin{table}[H]
-        \caption{tblr 基本用法}
-        \label{tbl:2-1}
-        \begin{tblr}{
-            % colspec={X[r,m,2]X[c,3]X[l,1]}
-            X[r,m,2]X[c,3]X[l,1]
-        }
-            \toprule
-            Head & Test & 测试 \\
-            \midrule
-            Class that has many accessor methods and accesses a lot of external data & ATFD is more than a few & 3 \\
-            1 & 2 & 3 \\
-            1 & 2 & 3 \\
-            \bottomrule
-        \end{tblr}
-    \end{table}
-\end{texcode}
-
-tblr 环境各列的对齐方式可以以键值对的方式在必选参数中设置，或者直接作为唯一必选参数（参考 tabularray 手册第 24 页）。列类型包括 c/l/r, t/b/m, X 等。c/l/r 为默认的三种对齐方式，t/b/m 指定单元格内容超过列宽时垂直方向的对齐方式， X 类型会自动调整列宽使全表宽度与页宽一致，X 类型列的水平、垂直对齐方式以类似 X[c] 的方式在 X 后的方括号内指定。X 类型后的方括号可以指定此列宽度与其他X类列宽度的相对大小，也可使用 \clist{wd=A}直接指定列宽。推荐使用 X 作为列类型。
-
-\begin{texcode}[]{}
-    \begin{tblr}{
-        colspec={|ll|X[c]|rr|},
-        cell{1}{1}={r=3,c=2}{r,m},
-        cell{1}{3}={r=2,c=3}{l,t},
-        cell{3}{Z}={}{red},
-        hline{4-6}={2pt,blue},
-    }
-        \hline
-        1-1 & 1-2 & 1-3 & 1-4 & 1-5 \\
-        \hline
-        2-1 & 2-2 & 2-3 & 2-4 & 2-5 \\
-        \hline
-        3-1 & 3-2 & MIDDLE & 3-4 & 3-5 \\
-        % \hline (4th)
-        4-1 & 4-2 & 4-3 & 4-4 & 4-5 \\
-        % \hline (5th)
-        5-1 & 5-2 & 5-3 & 5-4 & 5-5 \\
-        % \hline (6th)
-    \end{tblr}
-\end{texcode}
-
-tabularray 的优点在于格式和内容分离，使用更贴合人类习惯。单元格的合并，文字、背景、边框的样式都可以放在参数中设置。 \clist{cell{R}{C}={merge}{style}}用于设置单元格合并，其中 R,C 指定合并单元格左上角的位置，merge参数指定合并多少行多少列，style 调整合并后的单元格样式，其中 R,C 除了使用行号进行索引，可以使用 X,Y,Z 索引倒数第三、二、一行/列，可以使用 odd/even 选择 奇/偶列，还可以使用连字符(dash)选择区间，非常方便。
-
-\xsubsection{复杂表格}{Complicated tables}
-
-在三线表中可以加辅助线，以适应较复杂表格的需要，具体使用方法请自行阅读宏包：
-
-\begin{texcode}[]{}
-\begin{table}[H]
-  \centering
-  \caption{compare with other approachs}
-  \label{table:methodcompare}
-  \begin{tblr}{
-      colspec={*{7}{X[c]}},
-      cell{1}{1}={r=2}{c,m},
-      cell{1}{2,5}={c=3}{c,m},
-      hline{2,4,6}={1pt},
-      hline{1,3,Z}={1.5pt},
-      row{4,5}={rowsep=0pt},
-      row{Z}={m,font=\bfseries},
-  }
-    Model & trigger inditification & & & Event Extraction & & \\
-    & P(\%) & R(\%) & F1(\%) & P(\%) & R(\%) & F1(\%) \\
-    Baseline1 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline2  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Baseline3  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-    Our approach  & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 & 76.84 \\
-  \end{tblr}
-\end{table}
-\end{texcode}
-
-\xsubsection{长表格}{Long Tables}
-
-当表格过长时，使用\clist{longtblr}环境，此时不需要浮动体环境。在可选参数中需要设置\clist{theme=xjtu_std}，以调用预先设置好的续表样式，同时设置表格标题、label、脚注等，具体使用方法请自行阅读宏包。
-
-\begin{texcodeonly}[]{}
-    \begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    \dots 
-    Foot & Foot & Foot \\
-    \bottomrule
-\end{texcodeonly}
-
-\begin{longtblr}[
-        theme = xjtu_std,
-        caption = {A Long Long Long Long Long Long Long Table },
-        entry = {Short Caption},
-        label = {tblr:test},
-        note{a} = {脚注},
-        note{$\dag$} = {还是脚注},
-        remark{Note} = {注释，即表格内没有标注符号的脚注},
-        remark{Source} = {还是注释},
-    ]{
-        colspec = {XX[c]X},
-        rowhead = 1, rowfoot = 0,
-    }
-    \toprule
-    Head & Head & Head \\
-    \midrule
-    Head & Head & Head \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta\TblrNote{a} & Eta \\
-    Iota & Kappa\TblrNote{$\dag$} & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    %
-    % ......
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    % Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    \midrule
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    Alpha & Beta & Gamma \\
-    Epsilon & Zeta & Eta \\
-    Iota & Kappa & Lambda \\
-    Nu & Xi & Omicron \\
-    Rho & Sigma & Tau \\
-    Phi & Chi & Psi \\
-    Foot & Foot & Foot \\
-    \bottomrule
-\end{longtblr}

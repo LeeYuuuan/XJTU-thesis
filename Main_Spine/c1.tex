@@ -2,274 +2,252 @@
 
 \xchapter{绪论}{Introductions}
 
-\xsection{背景}{Backgrounds}
+\xsection{研究背景和意义}{Backgrounds}
 
-本文档仅提供部分可能用到的示例，系统的学习 \LaTeX 用法请参考其他书目，如 \emph{lshort}，可通过在 shell(命令行/cmd) 中执行 \clist{texdoc lshort-zh} 获得中文版。
+脑卒中是世界第二大致命的疾病，俗称为中风，除了高死亡率外，幸存者也可能会失去
+视力、语言、瘫痪或神志不清。全世界每年有约 1500 万人患中风。其中 500 万人死亡，另
+有 500 万人终身残疾，这严重危害到的患者的健康，并且给家庭和社区造成了严重的负担。
+因此，及时的治疗对于脑卒中的患者而言至关重要。通常而言，脑卒中可分为两种类型，即
+出血性脑卒中和缺血性脑卒中。缺血性脑卒中通常由于某些东西阻塞了大脑部分的血液供应
+而导致的，出血性脑卒中则是由于脑中血管破裂引起的脑出血所导致的。因此不同类型的脑
+卒中所对应的治疗的手段有所不同。其中缺血性卒中通常可以利用溶栓剂 (thrombolytic)治
+疗；而出血性卒中则可通过血管内手术使其康复。同时，利用药物治疗缺血性脑卒中的有效
+治疗时间通常在四个半小时内。由此可见，实现院前的脑卒中快速检测和类型判断尤为重要。
+随着生物医学的飞速发展，各种先进的技术在医学成像中得到更加广泛应用。目前卒中
+最主要的鉴别手段即是利用医学成像技术如 X-CT 所得到的结果进行判断。除此之外，医学
+成像技术对于其他临床疾病的诊断和治疗有着巨大的意义，已成为临床诊断与医学研究中不
+可或缺的一部分。计算机断层扫描 (Computed Tomography, CT) 作为过程层析成像
+( Process Tomography, PT) 的一种, 通过利用某种介质与人体发生相互作用来计算出其断层
+图像，从而直观的呈现出人体组织器官的形态。目前国内外用于临床诊断的 CT 技术主包括
+X 射线计算机断层扫描成像(X-ray computed tomography, X-CT)、超声层析成像(Ultrasound
+Tomography) 以及磁共振成像( Magnetic Resonance Imaging, MRI) 等。在这些 CT 诊断技
+术中，X-CT 的成像精度高，但是由于 X 射线的辐射对人体有害，因此在很多情况下不适于
+大量重复使用，甚至不能对特定的群体使用（对于孕妇等）。超声 CT 利用超声波反射的信息
+重建出人体内部的图像，是目前最安全的 CT 技术。但是由于难以建立超声波在人体内部吸
+收、投射和反射的确定关系，目前的超声波成像技术忽略了超声波与人体组织之间的相互作
+用二得不到理想的定量结果。MRI 可以提供分子水平的信息，能够发现人体生理化学的早期
+变化，但是该技术成像速度较慢并且观察不到骨组织信息。
 
-同时，务必意识到 \LaTeX 的工作及使用方式与 Microsoft Word 有极大的不同，不要问「怎么在 \LaTeX 中实现 Word 的 xx 功能」。
 
-\xsection{符号说明}{Examples}
+上述传统的 CT 诊断技术在临床上应用广泛，都能获得清晰的人体组织图像，但在医疗
+实践中不尽如人意之处在于其成像成本高，价格昂贵、设备复杂并且对使用场景有一定的限
+制，也不便于连续监测。对于卒中这类发病快、死亡率高的疾病而言，传统的 X-CT 由于设
+备复杂庞大而无法实现及时的院前检测。因此人们迫切需要一种能够避免上述一部分缺陷的
+CT 技术，电阻抗成像（Electrical Impedance Tomography, EIT）技术就是其中之一。
 
-为了更加清楚的说明本模板的用法，特意使用了如下几种标记方式来标记「\LaTeX 源码」及「说明」：
-
-\clist{行内的灰色字块}表示简短的代码（\LaTeX 或 shell）；
-
-\clist[columbiablue]{行内的蓝色字块}表示宏包的名称。
-
-\begin{tcolorbox}
-  灰色框用来放置有一定长度的 \LaTeX 源码（及执行结果）
-\end{tcolorbox}
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  红色框用来放置学校的学位论文模板的\textbf{格式}要求
-\end{tcolorbox}
-
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black]
-  蓝色框用来放置学校的学位论文模板的\textbf{内容}要求
-\end{tcolorbox}
-
-\begin{tcolorbox}[colback=blue!5!white,colframe=blue!75!black,title=绪论部分的要求]
-  绪论部分主要论述论文的选题意义及应用背景、国内外研究现状分析及论文的主要研究内容等。
-\end{tcolorbox}
-
-\clearpage
-
-\xsection{基本功能}{Basic Functions}
-
-\xsubsection{文档层级}{Level of this document}
-
-按照要求，正文最多应具有七个层级。其中，为了方便中英目录的生成，模板重新定义了前三级标题的命令，并新增了第六级的命令。注意，不论正文主体语言是否为英文，标题顺序均为先中后英（前三级）。
-
+人体内不同组织的电导率（电阻率）不同，这种差异性为 EIT 的技术的实现提供了生物
+医学基础。\cref{table:table1} 列出了人体主要组织和器官的阻抗分布，可以看到组织器官含水量和电导率
+成正比（和阻抗成反比）。
 \begin{table}[H]
-  \begin{tblr}{
-    colspec={X[c]X[c]},
-    verb
-  }
+  \center
+  \caption{20~100kHZ 下人体部分器官组织的阻抗分布}
+  \label{table:table1}
+  \begin{tblr}{c c c c c c c}
     \toprule
-      层级 & 命令 \\
+    组织 & 脑髓 & 血液 & 肝脏 & 神经组织 & 脂肪 & 骨骼\\
     \midrule
-      0  & \verb|\xchapter{Chs}{Eng}| \\
-      1  & \verb|\xsection{Chs}{Eng}| \\
-      2  & \verb|\xsubsection{Chs}{Eng}| \\
-      3  & \verb|\subsubsection{Chs/Eng}| \\
-      4  & \verb|\paragraph{Chs/Eng}| \\
-      5  & \verb|\subparagraph{Chs/Eng}| \\
-      6  & \verb|\subsubparagraph{Chs/Eng}| \\
+    阻抗(Ω/cm) & 65 & 150 & 350	& 580	& 2060 & 16600| \\
     \bottomrule
   \end{tblr}
 \end{table}
 
-示例如下：
-
-\subsubsection{第四级标题$1$}
-
-\paragraph{第五级标题$1$}
-
-\paragraph{第五级标题$2$}
-
-\paragraph{第五级标题$3$}
-
-\subparagraph{第六级标题$1$}
-
-\subparagraph{第六级标题$2$}
-
-\subparagraph{第六级标题$3$}
-
-第六级下的一些文字
-
-\subsubparagraph{第七级标题$1$}
-
-第七级下的一些文字
-
-\clearpage
-
-\xsubsection{加粗，斜体与其他字体设置}{Bold, Emph and Other Font Settings}
-
-在中文学位论文的写作中，不推荐使用加粗，斜体等方式突出重点。
-
-使用\clist{\textbf{text}}进行可以对字加粗；同时，请注意到在英文中，正确的强调方式不是使用加粗，而是使用斜体，即使用\clist{\emph{text}}进行强调。如：
-\begin{texcode}[]{}
-  为了突出\textbf{重点}，英文可以这样：This is the \emph{key question}.
-\end{texcode}
-
-使用\clist{\textit{text}}、\clist{\underline{text}}等实现斜体，下划线等格式。
-
-
-
-
-
-\xsubsection{脚注及其使用}{Footnotes}
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  脚注可用小号字（一般小五号宋体）列在相应正文同一页最下部并与正文部分用细线（版面宽度的1/4长）隔开。
-\end{tcolorbox}
-
-脚注\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}\footnote{脚注序号“\ding{172}，……，\ding{180}”的字体是“正文”，不是“上标”，序号与脚注内容文字之间空$1$个半角字符，脚注的段落格式为：单倍行距，段前空$0$磅，段后空$0$磅，悬挂缩进$1.5$字符；中文用宋体，字号为小五号，英文和数字用Times New Roman字体，字号为$9$磅；中英文混排时，所有标点符号（例如逗号“，”、括号“（）”等）一律使用中文输入状态下的标点符号，但小数点采用英文状态下的样式“.”。}是对文中有关内容的解释、说明或补充，使用上角标（序号\ding{172}、\ding{173}、$\cdots$）进行标注。
-
-脚注可以通过 \clist{\footnote{}}自动编号生成，也可使用\clist{\footnotetex{text}}手动添加脚注。
-
-摘要中关于项目资助的标识，是使用脚注生成的：
-
-\begin{tcolorbox}
-  \lstinline|\footnotetext{*本研究得到某某基金（编号：）的资助}|
-\end{tcolorbox}
-
-
-\clearpage
-
-\xsection{数字、公式和定理环境}{Equation and Theorem}
-
-\xsubsection{数字与单位}{Numbers and Units}
-
-模板引入了\clist[columbiablue]{siunitx}宏包实现数字与单位的正确排版，具体使用细节请自行查看该宏包，即 \clist{texdoc siunitx}。
-
-为了输入不同格式及角度的数字，可以使用\clist{\num{3.45d-4}}得到\num{3.45d-4}，使用\clist{\num{-e10}}得到\num{-e10}，使用\clist{\ang{1;2;3}}得到\ang{1;2;3}，避免了手动调节格式的问题。
-
-该宏包预先定义了部分单位，可以直接调用，同时生成较为复杂的单位。如：
-
-使用\clist{\SI{10}{\hertz}}得到 \SI{10}{\hertz}。
-
-\xsubsection{公式、矩阵与数学符号}{Equations, Matrix and Mathematical Symbols}
-
-
-\begin{tcolorbox}[colback=red!5!white,colframe=red!75!black]
-  \begin{enumerate}[leftmargin=0.5cm]
-    \item 公式应另起一行，居中编排，较长的公式尽可能在等号后换行，或者在“+”、“-”等符号后换行。公式中分数线的横线，长短要分清，主要的横线应与等号取平。
-    \item 公式后应注明编号，公式号应置于小括号中，如公式（2-3）。写在右边行末，中间不加虚线；
-    \item 公式下面的“式中：”两字左起顶格编排，后接符号及其解释；解释顺序为先左后右，先上后下；解释与解释之间用“；”隔开。
-    \item 公式中各物理量及量纲均按国际标准（SI）及国家规定的法定符号和法定计量单位标注，禁止使用已废弃的符号和计量单位。
-  \end{enumerate}
-\end{tcolorbox}
-
-此部分是 \LaTeX 中比较有趣的一部分，具体的使用细节请自行查阅资料。
-
-\begin{texcode}[]{}
-  公式如下：
-  \begin{equation}
-      -e^{\max}_\text{dis} \leq a_t \leq e^{\max}_\text{ch}\label{equation:c1:mdl:cstr_dis}
-  \end{equation}
-  式中：$e$为xxx；$a$为xxx。
-\end{texcode}
-
-所以如\cref{equation:c1:mdl:cstr_dis}所示：
-\begin{equation}\label{equation:c1:exp}
-    -e^{\max}_\text{dis} \leq a_t \leq e^{\max}_\text{ch}
-\end{equation}
-
-其中，数学公式可以使用\clist{\boldmath..\unboldmath}对整体进行加粗：
-
-\begin{texcode}[]{}
-\boldmath
-\begin{equation}
-  \biggl(\int_{-\infty}^\infty e^{-x^2}\diff x\biggr)^2 
-\end{equation}
-\unboldmath
-\end{texcode}
-
-如果只需对某个元素调整，可以通过\clist{\boldsymbol}，或使用\clist[columbiablue]{unicode-math}提供的，以\clist{\sym}开始的命令族，如\clist{\symup, \symbfup, \symit, \symbfit}：
-\begin{texcode}[]{}
-  \begin{equation}
-    \biggl(\int_{-\infty}^\infty \symbfit{e}^{-\symup{x}^2}\diff \symbfup{x}\biggr)^2 
-  \end{equation}
-\end{texcode}
-不建议再使用标准 \LaTeX 及 amsmath 扩展提供的 \clist{\mathbf}、\clist{\mathcal} 等输入不同样式的字母，可能会导致使用文本字体而非数学字体(的粗体形式)。
-
-请注意，本模板已经定义了\clist{\diff}命令作为微分符号，请不要自己使用新的符号，使用效果如下：
-\begin{align}\label{equation:c1:diff}
-  \biggl(\int_{-\infty}^\infty e^{-x^2}\diff x\biggr)^2 
-    &= \int_{-\infty}^\infty\int_{-\infty}^\infty e^{-(x^2+y^2)}\diff x\diff y \\
-    &= \int_0^{2\pi}\int_0^\infty e^{-r^2}r\diff r\diff\theta \\
-    &= \int_0^{2\pi}\biggl(-{e^{-r^2}\over2}\bigg\vert_{r=0}^{r=\infty}\,\biggr)\diff\theta \\
-    &= \pi
-\end{align}
-
-
-同时，定义了部分用于简化输入的命令：
-
-\begin{texcode}[sidebyside]{}
-  $\seq{x}{n}$ \\ % serise
-  $\iprod{i}{j}$ \\ % inner product
-  $\mbs{B}$  % \boldsymbol
-\end{texcode}
-
-\xsubsection{定理相关}{Theorems}\label{section:Environments for math}
-
-本模板通过\clist[columbiablue]{thmtools}宏包定义了以下环境，其中\textbf{证明}环境默认具有缩进，没有编号，同时使用\clist{\qedhere}结束证明，其他环境样式一致。
+根据生物电化学理论可以知道，实际组织的电导率还会随着该组织健康状况的的变化而
+变化，特别是某些病理变化的初期和恢复期。\cref{table:table2} 给出了大脑在不同病变状态下的阻抗变
+化。
 
 \begin{table}[H]
-  \begin{tblr}{
-    colspec={*{6}{X[c]}},
-    vline{4},
-  }
+\center
+\caption{4种情况下大脑阻抗变化范围}
+\label{table:table2}
+\begin{tblr}{X[c] X[c] X[c]}
+
   \toprule
-    环境 & 英文名称 & 中文名称 & 环境 & 英文名称 & 中文名称 \\
+  病变情况 & 数据来源 & 阻抗变化 \\
   \midrule
-    proof & Proof & 证明 & theorem & Theorem & 定理 \\
-    axiom & Axiom & 公理 & corollary & Corollary & 推论 \\
-    lemma & Lemma & 引理 & definition & Definition & 定义 \\
-    example & Example & 例子 & proposition & Proposition & 命题 \\
-    assumption & Assumption & 假设 & remark & Remark & 注 \\
-    problem & Problem & 问题 & conjecture & Conjecture & 猜想 \\
+  脑肌肉萎缩 & Holder (1992) & 提高 70\% ~ 200\% \\
+  扩展性 & Holder (1992) 提高 & 5\% ~ 25\% \\
+  抑制癫痫 & Boone et al. (1994) & 增加或减少 7\% \\
+  诱发反应 & Holder et al. (1996) & 减少 2\% ~ 5\% \\
   \bottomrule
-  \end{tblr}
+\end{tblr}
 \end{table}
 
-
-\begin{texcode}[]{}
-  \begin{theorem}[勾股定理]\label{theorem:pt}
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-  \end{theorem}
-
-  \begin{proof}
-    通过\ldots
-
-    所以：
-    \begin{equation*}
-        G(x, y) = G(y, x).  \qedhere
-    \end{equation*}
-  \end{proof}
-\end{texcode}
-
-\begin{proposition}
-  所以：
-  \begin{equation*}
-      G(x, y) = G(y, x).
-  \end{equation*}
-\end{proposition}
-
-\begin{conjecture}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{conjecture}
-
-\begin{axiom}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$ 若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$ 若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{axiom}
-
-\begin{definition}[勾股定理]
-    若 $a,b$ 为直角三角形的两条直角边，$c$ 为斜边，那么 $a^2 + b^2 + c^2.$
-\end{definition}
-
-\xsection{其他环境}{Other Environments}
-
-\xsubsection{枚举环境}{Enumerates}
-
-\begin{texcode}[]{}
-  \begin{enumerate}
-    \item 123
-    \item 231421
-    \item 124124
+可以看出，正常组织和病变组织之间的阻抗值有明显差异，然而这些差异可能无法通过
+传统 CT 发现，即 X-CT 所得到的结构成像无变化，但是其功能变化已经存在。因此，如果
+能在疾病初期就及时的监测出这些组织电特性的变化，将会非常有利于对相关疾病的预防以
+及早期治疗。EIT 技术利上述特性，在人体表面放置若干电极，通过注入激励电流后测量其
+边界电压分布，进而求得人体内部电导率分布并选择合适的重建算法重建出其内部结构的图
+像。即通过监测生物体内组织器官阻抗分布的变化来实现对于组织器官状态的判断。
+相较传统 CT 而言，EIT 技术具有以下优点：
+\begin{enumerate}
+  \item EIT 是一种非侵入性、无损伤的监测技术。这是由于 EIT 利用低频、小电流形成的电
+  流场来获取人体内部阻抗分布信息，是安全而无害的。
+  \item 可以实现长时间连续的动态成像。
+  \item 成像成本低、设备简单、使用方便，并且对使用场所的要求低，容易制成便携式设
+  备。
+  \item  属于功能性成像。EIT 不仅能反映组织的结构特性，更能获取人体生理、病理活动和
+  健康状况的功能性医学信息。
   \end{enumerate}
-\end{texcode}
+
+  由于缺血性脑卒中和出血性脑卒中所对应病灶区域的含水量有显著差异，因而患者颅内
+  的阻抗分布应同样具有显著差异。同时，EIT 技术由于其设备简单而便于携带，故利用 EIT 技
+  术实现对于卒中院前快速鉴别具有显著的可行性。以往的研究[40-42]也表明利用 EIT 技术实
+  现脑卒中的快速监测是可行的。此外，由于 EIT 技术的这些优越性是其他传统 CT 所不具有
+  的，因此在许多的其他的医疗领域，如作为在髋关节置换手术中实时的可视化工具、血流中
+  凝块的成像、淋巴问题的非侵入性诊断[Medical Applications of electrical tomography 2018 ]
+  等都可以作为主要的成像手段或是传统 CT 技术的补充。特别是在新冠大流行期间，
+  Tomasino 等人利用 EIT 技术实时地评估了 COVID-19 呼吸衰竭患者旋前、旋中、旋后不同
+  肺区域的变化[4]，体现出 EIT 技术长期监测疾病的能力。除此之外，EIT 技术在其他领域也
+  得到了广泛的应用。2003 年，UC Berkeley 的 Kruger 等人探究了 EIT 在半导体制造过程中
+  提供时空信息来分辨晶圆状态信息的可行性[8]。2015 年 Carnegie Mellon 大学的 Y Zhang 和
+  Harrison 利用 EIT 技术实现了手势识别 [5]，并有望应用在可穿戴设备（如智能手表）上。
+  在化学工程中，EIT 广泛应用于气动输送、液体混合等。[7]此外，EIT 技术在材料科学[8]、人
+  工敏感皮肤[9]等领域也得到了深入的研究。
+  
+  纵然 EIT 打破了传统医学成像设备庞大、昂贵、对人体有害、对于场景要求高等不足，
+目前其仍无法取代传统医学成像技术。其一，EIT 重建问题具有严重的病态性，即测量结果
+微小的变化就可能导致重建质量大幅度地下降。其二，传统的 EIT 图像重建算法通常利用如
+牛顿-拉弗逊(Newton-Raphson, N-R)等数值计算方法迭代求解出场域内部电导率（阻抗）分
+布，在这个过程中会多次求解 EIT 正问题和逆问题，因此通常速度较慢。此外，并且由于颅
+骨较低的电导率而导致进入颅内的电流强度大大减弱，这也给用于脑卒中鉴别任务的 EIT 图
+像重建带来了一些麻烦。
 
 
-\xsection{正文}{Text}
+近年来，深度学习模型因其对非线性映射强大的拟合能力而广泛应用在各个领域。主流
+的深度学习模型如卷积神经网络（CNN）及其变体，也已被验证能够很好的提取高维数据的
+复杂特征[deep learning: [6]YANN L, YOSHUA B, GEOFFREY H, Deep learning[J]. Nature, 2015,
+521(7533):436-444]。EIT 问题的关键就是建立从待测场边界的电压分布到场域内部电导率分
+布的映射（见 2.1）。同时，EIT 正问题结果相对准确，这就为基于深度学习的 EIT 图像重建
+算法提供了大量数据支持。
 
-\zhlipsum[1]
 
-\xsubsection{正文}{Text}
+根据对数据的建模方式不同，可将深度学习模型分为两类，分别为判别式模型和生成式
+模型。然而，当前的对于基于深度学习的 EIT 图像重建算法的研究主要集中在利用判别判式
+模型实现重建算法上。近年来，生成式模型在图像生成等任务重取得了显著的成果，由于生
+成式模型更能建模数据本身的分布信息，故利用其拟合 EIT 图像重建问题的菲线性映射将能
+显著地提高 EIT 重建图像的质量。因此，基于生成式模型的 EIT 图像重建算法具有显著的研
+究价值。
 
-\zhlipsum[2]
+\xsection{国内外研究现状}{Relative Works}
+\xsubsection{电阻抗断层成像及传统的图像重建算法}{EIT and Reconstruction Algorithm}
 
-\xsubsection{正文}{Text}
+EIT 技术最早可以追溯到 20 世纪 30 年代，当时的地球物理学家利用一种类似 EIT 的技
+术——电阻率层析成像技术(Electrical Resistivity Tomography, ERT) ，在地球表面钻孔放置
+电极，或直接将电极放置在地球表面，向大地注入电流冰测量其在地表产生的电压分布，以
+此来确定地球内部的电导率分布，进一步进行相关的地质学研究（如结合已知岩面和矿物的
+特性来探寻矿产资源的分布情况）[1]。1976 年，Wisconsin Madison 大学的 Swanson 在他
+的博士论文中率先提出了 EIT 这一新颖的成像技术，引起了广泛的关注。1978 年，Henderson
+和 Webster 设计并制造了一个“阻抗相机（impedance camera）”，并利用其生成了人体胸部
+电阻抗图像，可以显示人体肺、心脏等位置，但此时的图像还不是严格意义上的断层图像[2]。
+1983 年，Sheffield 大学的 Barber 和 Brown 利用等位线反投影算法重建出了人体前臂的断
+层图像，其中低电导率区域可大体分辨出臂骨。该算法通过假设边界电压和电阻率分布之间
+的为线性关系，实现了快速的 EIT 图像重建。1987 年，Brown 等人建立了第一个完整的 EIT
+数据测量系统(Data measurement system, Mark I System)。该系统有 16 个电极，采用相邻电
+极 5mA，51kHz 恒流激励。同年，Wisconsin Madison 大学的 Sakamoto 也建立了他们的 EIT
+恒流激励测量系统。此后，由于 EIT 技术广阔的应用前景，吸引了越来越多的专家学者投入
+到研究行列之中。
 
-\zhlipsum[3]
+EIT 技术的关键一环就是其图像重建算法。近年来，越来越多的学者从不同的角度对 EIT
+重建算法进行了改进。最初，根据成像目标的不同，可以将其分为两类：动态成像和静态成
+像。如今，随着频率差分(Frequency-difference)成像的算法的提出，可将成像算法更细致的
+分为三类：时间差分(Time- Difference)成像；绝对成像（静态成像）；频率差分成像。其中，
+时间差分成像，即最初所称为的动态成像，利用两个不同时刻的数据通过图像重建算法来计
+算出这两个时刻待测场内阻抗分布的差值，从而重构出差分图像。以 Barber 等人提出的等
+位线反投影算法为代表。[ ]由于测量数据相减时，其中的系统噪声会被消去，因此动态成像
+对于 EIT 系统的数据采集过程中系统误差有一定的抗干扰能力，因而实现起来较为容易，并
+且计算量较小。而动态成像最大的缺点即由于成像需要前后时刻待测场内的阻抗发生变化，
+因而无法对内部阻抗未发生变化的场进行成像，这就导致其应用范围窄。并且该算法假设电
+流在同一平面内流动，故难以推广到三维 EIT 中。静态成像以待测场内的电导率分布绝对值
+为计算目标，利用任何时间点测得的边界电压值直接绘制成电导率分布图像，而不需要其他
+时间的数据，因此应用范围相较于动态成像更广。具有代表性的静态成像算法有美国
+Wisconsin 大学 EIT 研究小组在其 EIT 成像系统中个应用的 Newton-Raphson(N-R) 算法、
+1985 年 Muria 等人提出的敏感矩阵法等。频率差分成像算法也被称为多频
+EIT(multifrequency EIT, MFEIT)。由于生物体组织的阻抗谱具有频率依赖性，因此 MFEIT 测量
+不同频率下待测场内的阻抗分布，并利用它们重建了一组与组织特性相关的多拼电导率图
+像。现有的 MFEIT 算法有基于单测量向量(SMV)行的单频段 EIT 图像重建算法[10-12]、基于
+多重测量向量(MMV)的 EIT 重建算法[13]等。
+
+\xsubsection{基于深度学习的EIT图像重建算法}{deep learning based EIT Reconstruction Algorithm}
+
+近年来，深度神经网络由于其对于非线性映射良好的拟合能力因而在模式识别和机器学
+习领域得到了广泛的应用。EIT 图像重建问题本质上是利用待测场的边界电压-电流分布计
+算出其内部的阻抗分布，即得到边界电压值到内部阻抗分布的非线性映射。EIT 逆问题的非
+线性、病态性等特点是影响图像质量的主要原因。因此，利用深度神经网络的非线性映射解
+决 EIT 重建问题中所存在的问题具有一定的可行性。
+
+2016 年， Martin, Sebastien 等人提出了基于径向基函数（RBF）人工神经网网络的方法
+来解决 EIT 重建问题，并证明了目标面积与 RBF 网络的扩散常数（spread constant）有很强
+的相关性。该方法给出了更精确的小目标和大目标重建结果。[14]2017 年，S. Russo 等人利
+用一个三层的人工神经元网络（ANN）实现了对 EIT 重建问题的求解，并首次将其应用在提
+高基于 EIT 的人工敏感皮肤的触摸检测精度上。[15] 2018 年，Wei Z 等人提出了一种基于迭
+代的反演方法和一种基于卷积神经网络(CNN)的反演方法实现了 EIT 逆问题的求解，快速、
+稳定、高质量地进行 EIT 成像。[16] 2019 年，Shu-Wei Huang 等人利用 RBFNN 和 U-net 实
+现了图像重建算法，该方法能有效的去除图像伪影（image artefact），并且可以更加准确的
+重建出正确的目标位置。[17]
+
+除了直接利用神经网络的非线性映射特性拟合 EIT 逆问题中边界电压到-电流数据到电
+导率的映射外，部分学者还利用神经网络 EIT 数值解所得到的电导率分布进行去噪（后处
+理）。2018 年，S. J. Hamilton 等人没有直接利用神经网络拟合 EIT 重建过程，而是利用 Dbar 方法实现了 EIT 图像重建，并使用经仿真数据训练侯的 CNN 进行图像后处理，有效的提
+高了重建质量。[18] 同年，Martin S 等人在 EIT 问题求解器后添加全连接曾的人工神经元网
+络（ANN）作为图像后处理模块，将重建的图像输入 ANN 以此来实现降噪的目的。[19]
+2019 年，S. Ren 等人提出了一种两阶段深度学习(TSDL)方法，该方法通过一个预重建块重建
+出低质量图像，然后结合形状数据利用 CNN 对重建结果进行后处理，能较好地重建肺形态，
+其重建结果显著优于传统的全变差（TV）方法。[20] 同样利用 CNN 进行后处理的还有
+Hamilton SJ 等人，他们将卷积神经网络与 D-bar Method 配对，设计了一种基于深度学习
+的后处理算法，该方法可以很好的应对不确定的形状。[21] 同年，Duan X 等人对 EIT 重建
+后的图像进行后处理，利用卷积神经网络去除图像伪影，并将其应用在了人工皮肤 EIT 系统
+中，显著提高图像的可视性并减少了重建图像与真实情况的误差[22]。
+
+2020 年，N. Biasi 等人利用多层感知机实现了基于 EIT 触觉感知（tactile sensing）的逆
+问题求解，其重建后的图像与仿真结果具有较高的一致性[23]。同样利用多层感知机来实现
+图像重建算法的还有 2020 年 Lee K 等人，他们利用一个全连接的多层感知拟合了从 EIT 电
+压-电流数据到电导率的映射，实现了对腹部皮下脂肪的电导率分布的图像重建算法，用来
+估计腹部皮下脂肪的厚度，试验结果表明这种厚度估计的方法能较好地应对脂肪均匀分布的
+情况，并且对于其他区域具有很好的鲁棒性[24]。同年，Zhichao Lin 等人利用用神经网络的
+监督下降法(SDMNN)实现了图像重建，该方案结合了神经网络收敛速度快和有监督下降法
+(SDM)泛化能力强的优点，数值结果验证了该方法的有效性和准确性[25]。Capps M 等人利
+用卷积神经网络成功拟合了 EIT D-bar（一种非迭代式的重建算法） 方法中的散射变换与结
+构内部边界之间的映射关系，并给出了仿真和实验数据的实例[26]。由于神经网络的参数初
+始化对于整个网络收敛具有一定的影响，同年 Zhou Chen 等人利用一个线性回归解初始化
+FC-UNet 中的网络参数之后训练网络，并将训练好的网络应用在了 cell imaging with micro
+EIT sensors.（微 EIT 传感器的细胞成像）中 [27]。
+
+由于神经网络的可解释性较差，因此有学者也致力于在提高 EIT 重建质量的同时来保持
+模型的可解释性。2020 年，S. Siltanen 等人演示了卷积神经网络如何代替最小二乘拟合，并
+且在保持可解释性的同时，显著提高的模型精度[28]。2022 年，Rong Fu 等人 提出了一种
+将正则化重建方法的数学结构与深度学习相结合的正则化引导深度成像(RGDI)方法。实验证
+明，该方法可以使图像重建仅仅依赖于测量数据而非人工建模或超参数的不同[29]。
+随着深度学习技术的进一步发展，部分学者开始尝试将前沿的技术应用在 EIT 问题求解
+中。2021 年 Zainab Husain 等人利用一种基于低阶双变量多项式和 RBF 网络的电导率面分
+解方法，有效地解决了 EIT 图像重建的逆问题。随后利用卷积网络和迁移学习对重建图像进
+行分割，并利用 KNN 进行目标分类，获得了令人满意的分类精度[30]。2022 年，Zhou Chen
+等人构造了一种带有 Self-Attention 机制的长短期记忆网络（LSTM），很好的捕获了多频 EIT
+频率内和频率间的依赖关系，并相对传统 MMV-ADMM 和最先进的深度学习方法而言有更
+好的图像重建质量，收敛性能、噪声鲁棒性和计算效率[31]。2022 年， Xinyu Zhang 等人提
+出了一种由预成像块、特征提取块、图像重建块和图像去噪块四个部分组成的基于卷积神经
+网络的 v 形去噪网络，重建效果明显优于 Tikhonov 正则化、卷积神经网络和 V-Net 方法重
+建的图像[32]。
+
+由于 EIT 逆问题的特性导致其图像质量差，因此，对于某个具体的任务（通常为分类任
+务）而言，可以绕过 EIT 重建过程，利用测得的电流-电压数据直接得到某个具体目标的结
+果。2020 年 McDermott B 等人利用 SVM 分类器对多频对称差分电阻抗断层成像(MFSDEIT)数据进行分类，以区分出血、血块以及正常情况，并在模拟数据和真人数据上达到了 85%
+的平均精度[33]。2021年 Panji N. Darma等人利用KNN分割算法对肉类重构图像进行聚类，
+成功实现了对肉类不同区域的分割[34]。2021 年 Chiang S 等人利用 SVM 等传统机器学习
+方法建立了几个不同的多分类器来分别进行活体猪组织分化的实验，结果表明，生物阻抗数
+据可以有效地用于体内组织类型的鉴别[35]。2022 年 Nawapat Khumwa 等人建立了一个全
+连接的多层感知机，拟合了了从阻抗分布到肺容积的映射，利用 EIT 中的生物电阻抗值来估
+计肺容积，并在较高信噪比的情况下取得了理想的预测精度[36]。2022 年， Yanyan Shi 等
+人构建了一个多分类任务的 RCNN（残差卷积网络），将 EIT 测量数据作为网络的输入，并
+输出分类结果。这一设计绕过了 EIT 逆问题求解的过程，因此避免了图像重建带来的误差，
+并且在仿真数据和真实数据分别与全连接神经网络和 scnn 进行比较，证明了其分类结果优
+于后两者[37]。
+
+在工业 EIT 的研究中，Rymarczyk, T 等人在 2019 训练了在 EIT 和超声透射断层成像( UST)
+背景下分别训练了多个逻辑回归子系统（LRS），每个 LRS 生成了重建图像的单个像素，以此
+实现图像重建算法。该方法得益于其高效性因此可应用在工业界[38]。同年，他们将基于机
+器学习的 EIT 重建算法与传统的确定性算法（Gauss-Newton 法）对比，结果表明 ANN 具有
+最理想的成像效果，但其缺点是训练时间长，重建时间相对较长[39]
+
+\xsubsection{生成式模型}{Generative Model}
+
+\xsection{本文研究内容及结构安排}{Main Content and Structure}
