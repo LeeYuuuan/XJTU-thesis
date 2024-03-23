@@ -301,3 +301,72 @@ FCN更多地是用作一个模型的一小部分。
 
 
 \xsubsection{卷积神经网络}{Convolutional Neural Networks}
+
+\xsubsection{激活函数}{Activation Functions}
+神经网络在各个领域的广泛应用主要得益于其对于非线性映射的强大拟合能力，
+这种拟合能力，主要来自于非线性激活函数。
+而深度学习模型如CNN，FCN等基础模块的运算通常为大量的线性映射（加法和乘法）。
+因此，选择适当的激活函数，对于深度学习模型性能的提升将是显著的。
+近年来，各式各样的激活函数不断被学者们提出，本文将重点介绍模型从采用的四种激活函数，如
+对于其他未被使用到的激活函数将不做赘述。
+\begin{enumerate}
+  \item ReLU
+  \begin{equation}
+    \sigma(x) = 
+    \left\{
+    \begin{aligned}
+      0, \quad x <= 0 \\
+      x, \quad x > 0
+    \end{aligned}
+    \right.
+    \end{equation}
+  \item Softmax
+  \[
+\text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
+\]
+
+其中，$\mathbf{z} = (z_1, z_2, ..., z_K)$ 是输入向量，$K$ 是类别的数量。softmax 函数将输入向量的每个元素 $z_i$ 转换为相应的概率值，即满足所有概率之和等于1。
+
+  \item SiLU
+
+  \[
+  \text{SiLU}(x) = x \cdot \sigma(x)
+  \]
+  
+  其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
+  \[
+  \sigma(x) = \frac{1}{1 + e^{-x}}
+  \]
+
+  \item QuickGELU
+\[
+\text{GELU}(x) = x \cdot \Phi(x)
+\]
+
+其中，$\Phi(x)$ 是标准正态分布的累积分布函数（CDF），可以用高斯误差函数（erf）的形式表示：
+\[
+\Phi(x) = \frac{1}{2} \left(1 + \text{erf} \left(\frac{x}{\sqrt{2}}\right)\right)
+\]
+
+\end{enumerate}
+\begin{figure}[h]
+  \centering
+\includegraphics[width=0.9\textwidth]{activation.png}
+\caption{激活函数}
+\label{figure:activation}
+  
+\end{figure}
+
+\xsubsection{归一化}{Normalization}
+在机器学习（尤其是深度学习）任务中，由于不同通道（特征）数据的量纲往往不同，而这种情况通常会影响最终数据分析的结果。
+因此，为了消除这种由于量纲不同而导致模型性能下降的可能性，通常会进行数据标准化（standardization），最常用的方法即数据归一化（Normalization）处理。
+简而言之，归一化的目的就是使得预处理的数据被限定在一定的范围内（比如$[0,1]$或者$[-1,1]$），从而消除奇异样本数据导致的不良影响。
+
+本文将重点介绍模型中使用到的以下三种归一化：
+\begin{enumerate}
+  \item 层归一化（Layer Normalization）
+  \item 批归一化（Batch Normalization）
+  \item 组归一化（Group Normalization）
+\end{enumerate}
+
+\xsubsection{优化器}{optimizer}
