@@ -126,25 +126,123 @@ EIT问题即是在已知 $F_{\sigma} = F_0$的条件下求解 $\sigma(x,y)$，�
 \begin{equation}
   F_{\sigma}(\psi) = F_{0}(\psi),  \forall \psi \in \Psi
 \end{equation}
-在实际求解中，通常求解出EIT的解析解非常困难，因此通常使用基于有限元的迭代方法求解出其近似解，EIT有限元模型如下图所示
+在实际求解中，通常求解出EIT的解析解非常困难，因此通常使用基于有限元的迭代方法求解出其近似解，EIT有限元模型如\cref{figure:FEMa}所示
+\begin{figure}[h]
+\centering
+\includegraphics[width=.5\textwidth]{FEM.png}
+\caption{有限元模型}
+\label{figure:FEMa}
+\end{figure}
 
-则可设单元场域为\cref{figures:FEM}所示，三角形单元各顶点$M_1(x_1,y_1)$，$M_2(x_2,y_2)$，$M_3(x_3,y_3)$的电位分别为
-$\Phi_1$,$\Phi_2$,$\Phi_3$。
-\\
-\begin{tikzpicture}[scale=1.5]
-  \label{figures:FEM}
-  \caption{三角形单元}
-  % 坐标轴
-  \draw[->] (-1,0) -- (3,0) node[right] {$x$};
-  \draw[->] (0,-1) -- (0,3) node[above] {$y$};
+则可设单元场域为\cref{figure:fem}所示，三角形单元各顶点$M_1(x_1,y_1)$，$M_2(x_2,y_2)$，$M_3(x_3,y_3)$的电位分别为
+$\Phi_1$,$\Phi_2$,$\Phi_3$。用向量表示为:
+\[
+  \Phi =
+  \begin{pmatrix}
+  \Phi_1 \\
+  \Phi_2 \\
+  \Phi_3
+  \end{pmatrix}
+  \]
+\begin{figure}[htbp]
+    \centering
+    
+  \begin{tikzpicture}[scale=1.5]
+   
+   
+    % 坐标轴
+    \draw[->] (-1,0) -- (3,0) node[right] {$x$};
+    \draw[->] (0,-1) -- (0,3) node[above] {$y$};
+    
+    % 三角形
+    \coordinate (M1) at (2,1);
+    \coordinate (M2) at (2.5,2.5);
+    \coordinate (M3) at (1.5,2);
   
-  % 三角形
-  \coordinate (M1) at (2,1);
-  \coordinate (M2) at (2.5,2.5);
-  \coordinate (M3) at (1.5,2);
+    \draw  (M1) node[right] {$M_1(x_1,y_1)$} -- (M2) node[above right] {$M_2(x_2,y_2)$} -- (M3) node[above left] {$M_3(x_3,y_3)$} -- cycle;
+  
+  \end{tikzpicture}
+  \caption{三角形单元}
+  \label{figure:fem}
+\end{figure}
 
-  \draw  (M1) node[right] {$M_1(x_1,y_1)$} -- (M2) node[above right] {$M_2(x_2,y_2)$} -- (M3) node[above left] {$M_3(x_3,y_3)$} -- cycle;
-\end{tikzpicture}
+令三角形单元内部的电位分布为：
+\begin{equation}
+  \Phi(x,y) = \alpha + \beta x + \gamma y 
+\end{equation}
+进一步将三角形顶点的坐标和电位带入求解可得：
+\begin{equation}
+  \Phi_e(x,y) = \frac{\Phi_1}{2\Delta}(a_1+b_1x+c_1y) + \frac{\Phi_2}{2\Delta}(a_2+b_2x+c_2y) + \frac{\Phi_3}{2\Delta}(a_3+b_3x+c_3y)
+\end{equation}
+其中，
+\begin{equation}
+  \left\{
+  \begin{array}{c}
+    a_1 = x_2y_3 - x_3y_2 \\
+    a_2 = x_3y_1 - x_1y_3 \\
+    a_3 = x_1y_2 - x_2y_1
+  \end{array}
+  \right.
+  \qquad 
+  \left\{
+    \begin{array}{c}
+      b_1 = y_2 - y_3 \\
+      b_2 = y_3 - y_1 \\
+      b_3 = y_1 - y_2
+    \end{array}
+    \right.
+    \qquad 
+    \left\{
+      \begin{array}{c}
+        c_1 = x_3 - x_2 \\
+        c_2 = x_1 - x_3 \\
+        c_3 = x_2 - x_1
+      \end{array}
+      \right.
+\end{equation}
+$\Delta = b_1c_2 - b_2c_1$为三角形的面积。
+进一步令：
+\begin{equation}
+  B = \frac{1}{2\Delta} \left[
+  \begin{array}{ccc}
+    b_1 & b_2 & b_3 \\
+    c_1 & c_2 & c_3 \\
+    
+  \end{array}
+  \right]
+\end{equation}
+可求得三角形内部泛函为：
+\begin{equation}
+  F_e(\Phi) = \frac{1}{2} \Phi K_e \Phi^T - \Phi Q_e
+\end{equation}
+其中,
+根据每个点的坐标可分别求得单元刚度矩阵$K$中各元素的值：
+\begin{equation}
+  K = 
+  \left[
+  \begin{array}{ccc}
+    \frac{b_1^2 + c_1^2}{4\Delta \rho} & \frac{b_1b_2 + c_1c_2}{4\Delta \rho} & \frac{b_1b_3 + c_1c_3}{4\Delta \rho}  \\
+    \frac{b_1b_2 + c_1c_2}{4\Delta \rho} & \frac{b_2^2 + c_2^2}{4\Delta \rho} & \frac{b_2b_3 + c_2c_3}{4\Delta \rho} \\
+    \frac{b_1b_3 + c_1c_3}{4\Delta \rho} &  \frac{b_2b_3 + c_2c_3}{4\Delta \rho}& \frac{b_3^2 + c_3^2}{4\Delta \rho} 
+  \end{array}
+  \right]
+\end{equation}
+则待测长内总体泛函为
+\boldmath
+\begin{equation}
+  F_e(\Phi) = \frac{1}{2} \Phi K \Phi^T - \Phi Q_e
+\end{equation}
+\unboldmath
+进一步，对泛函取极值，得到线性方程组：
+\boldmath
+\begin{equation}
+  K\Phi = Q
+\end{equation}
+\unboldmath
+其中K为总体刚度矩阵，由单元刚度矩阵叠加而成 \cite{2019_dcc}。
+\xsection{深度学习相关理论}{Theory about Deep Learning}
+  
+
 
 
 
