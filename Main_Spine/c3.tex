@@ -79,17 +79,17 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
         6 & VAE\_ResidualBlock & 512 & 512 \\
         7 & VAE\_SelfAttention & 512 & 512 \\
         7 & GroupNorm &  &  \\
-        8 & Conv2d & 512 & 2 \\
+        8 & Conv2d & 512 & 64 \\
         \bottomrule
     \end{tblr}
 \end{table}
 
 由于EIT电导率分布数据通常具有二维的特征，因此CVAE利用常见的残差卷积结构作为网络主体，以此来捕获电导率分布的高维特征。
 
-其中，第一层常规的2维卷积，
+其中，第一层常规的2维卷积，卷积核的大小是$3\times 3$，步长是$1$，填充值为1。
 第二层至第6成均为残差卷积块，结构如\cref{table:VAEResidualBlock}所示。在这里引入残差卷积，可以有效解决整个卷积神经网络的优化问题，
 并且可以提高网络的训练速度和收敛性，且能降低过拟合的风险。
-在VAE残差卷积块中，用了Group Normalization作为归一化层，能够减少归一化对batch size 的依赖（batch normalization对于batch size的大小非常敏感，其中较小的batch size可能会导致均值和方差不够准确）。
+在VAE残差卷积块中，卷积核的大小是$3\times 3$，步长是$1$，填充值为1。并且使用了Group Normalization作为归一化层，能够减少归一化对batch size 的依赖（batch normalization对于batch size的大小非常敏感，其中较小的batch size可能会导致均值和方差不够准确）。
 本文所采取的batch size 受计算机性能所限，为32，因此Group Normalization能显著减少网络的内存开销，并且一定程度上提高网络的性能。
 此外，该模块中采用了SiLU作为激活函数，相较于一些饱和型激活函数（如Sigmoid和Tanh），可以有效避免在输入较大或较小时导致梯度接近于零，从而避免梯度消失的问题。
 
@@ -136,10 +136,13 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     6 & LayerNorm \\
     7 & Linear \\
     8 & QuickGELU \\
+    10 & RBFNN \\
     9 & Linear  + residue 2\\ 
     \bottomrule
     \end{tblr}
 \end{table}
+VVAE用于编码边界电压分布，因此要求此编码器能实现对电压分布的深层次特征进行提取，更好地捕获其特征与电导率分布之间的关系。
+此部分的网络结构如\cref{table:VAE_Voltage}所示。关于RBF网络性能的验证见\cref{RBF}
 
 
 
@@ -147,11 +150,111 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 
 
 \xsubsection{图像重建块}{Image Reconstruction Block}
+此模块利用改良的扩散概率模型实现了EIT图像重建算法，模型结构如图所示。
+
+其中，Sampler 为用于采样 $t$时刻加噪声后的数据$x_t$，即Diffusion model的正向扩散过程；
+Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要根据输入的当前时间$t$、引导图像生成的条件向量（本文中为测量的边界电压分布）$v$以及当前时刻生成结果$x_t$，
+来预测$t-1$时刻需要减掉的噪声，进一步计算出$x_{t-1}$步的生成结果。
+
+
 \xsubsection{图像后处理块}{Postprocessing Block of the Image}
+由于图像重建块所重建的电导率分布为编码器编码后的分布，因此为了输入EIT图像，还需要对编码后的数据进行解码。
+此部分利用一个解码器对重建结果进行解码，将数据映射到电导率分布空间中。其具体结构如\cref{VAE_Decoder}所示。
+其中残差卷积块和SelfAttention块均与编码器一致。
+\begin{table}[H]
+    \centering
+    \caption{CVAE解码器架构}
+    \label{table:VAE_Decoder}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c] X[c]},
+        }
+        \toprule
+        层数 & 网络类型 & 输入通道数 & 输出通道数 \\
+        \midrule
+        1 & Conv2d & 64 & 512 \\
+        2 & VAE\_SelfAttention &  &  \\
+        3 & VAE\_ResidualBlock & 512 & 512 \\
+        4 & VAE\_ResidualBlock & 512 & 256 \\
+        5 & VAE\_ResidualBlock & 256 & 256 \\
+        6 & VAE\_ResidualBlock & 256 & 128 \\
+        7 & VAE\_ResidualBlock & 128 & 128 \\
+        8 & GroupNorm &  &  \\
+        9 & SiLU & & \\
+        10 & Conv2d & 64 & 1 \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+
+
+\xsection{径向基函数神经网络}{Radial Basis Function Neural Network}
+\label{RBF}
+
+此节计了一个改良的卷积神经网络结构，用于以验证该该RBF对于EIT电压-电导率分布映射强大的拟合能力。
+为验证RBF神经网络对于EIT数据优秀的拟合能力，首先利用仿真模型获得EIT电压-电导率分布数据集，
+其中，$d_m =  576$ ，即剖分的单元个数为576。$d_v = 192$ 即测量电压向量为192维。背景电导率为$0.15S/m$，扰动目标的中心电导率为0.7S/m。
+大小为六边形，且其电导率根据距中心的距离而减小，如\cref{figure:RBF_cond}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{RBF_cond.png}
+    \caption{EIT仿真结果}
+    \label{figure:RBF_cond}
+\end{figure}
+
+由于卷积层输出的每个元素都包含原始数据的空间特征，因此输出层包含 512 个神经元，代表更深层次的特征。
+此后为一个径向基函数神经网络（RBFNN），输入层有512个神经元，输出层有576个神经元，分别代表每个元素的电导率。
+众所周知，多层感知器包含点积（输入和权重之间）和激活（非线性）函数（例如 ReLU、Sigmoid 函数）。
+网络训练通常是通过所有层的反向传播来完成的。
+与 MLP 不同，RBFNN 使用欧几里德距离（输入和权重之间，也称为中心）和高斯激活函数，这使得神经元更加局部敏感。 
+RBF 网络具有与 MLP 类似的输入层和输出层。
+不同的是，隐藏层中的每个神经元都有一个原型向量和一个由 $\mu$ 和 $sigma$ 表示的带宽分别计算输入向量与其原型向量之间的相似度，如\cref{equation:RBFNN}所示。
+\begin{equation}
+    \label{equation:RBFNN}
+    y(x) = f(z(x)) = \sum_{i=1}^{m} v_i \phi_i(z(x)) + b
+\end{equation}
+其中：
+\begin{equation}
+    \phi_i(z(x)) = \exp\left(-\frac{|x - \mu_i|^2}{2\sigma_i^2}\right)
+\end{equation}
+
+\begin{itemize}
+    \item $y(x)$ 是 RBFNN 的输出；
+    \item $f(\cdot)$ 是输出层的激活函数；
+    \item $z(x)$ 是隐含层的输出；
+    \item $\phi_i(z(x))$ 是隐含层神经元 $i$ 的激活函数；
+    \item $v_i$ 是连接隐含层和输出层的权重；
+    \item $b$ 是偏置项；
+    \item $m$ 是隐含层神经元的数量。
+\end{itemize}
+
+
+
+该网络首先包含 192 个神经元的输入层，分别对应于边界电压的每个维度。接下来有 6 个卷积层，每一步应用 3 × 3 卷积核和最大池化。最后两层应用 3×3 卷积核和 2×2 卷积核平均池，在每个卷积层之后使用指数线性单元（ELU）作为激活函数，因为 ELU 是。
+由于卷积层输出的每个元素都包含原始数据的空间特征，因此输出层包含 512 个神经元，代表更深层次的特征。
+
+利用训练数据初步重建模型，所得的结果如\cref{figure:recons_rbf.JPG}所示，其中，
+第一行中的第一张图像是真实值。另外两个分别采用NR方法和学习率=0.0005模型的CNN + RBFNN（Adam）重建。
+第二行的前两张图像由 CNN+ RBFNN (Adam) 重建，学习率 = 0.0001 和 0.001。第三个则则是由单独的CNN（Adam）重建。
+表\cref{table:RBFNNev}为对该网络性能的评估，其中RE和CC分别为相对误差(relative error)和 相关系数(correlation coefficient)。
+(表中仅为最佳学习率下的性能其中CNN)
+\begin{table}[H]
+    \centering
+    \caption{网络评估}
+    \label{table:RBFNNev}
+    \begin{tblr}{colspec={X[c] X[c] X[c] X[c]}}
+        \toprule
+        模型类型 & CC & RE($\times 10^{-5}$) \\
+        \midrule
+        CNN+RBF(Adam) & 0.0005 & 0.9595 & 5.0552 \\ 
+        CNN+RBF(SGDM) & 0.8& 0.9020 & 7.2939 \\
+        CNN(Adam) & 0.0005 & 0.3694 & 15.0147 \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+通过相对误差和重建结果可分析得出，带有RBFNN的重建结果相较于不带RBFNN的重建结果有显著提升，因此认为RBFNN对于EIT电压-电导率映射的拟合有显著作用。
+此外，adam优化器对EIT重建结果具有显著的提升。
 
 
 \xsection{用于模型训练和测试的数据集设计与生成}{Design and GeneratioData of Dataset for Model Training and Testing}
-
 如\cref{figure:encoding_1}所示。
 
 \begin{figure}[h]
@@ -168,3 +271,4 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     \label{figure:cond_voltage}
 \end{figure}
 
+\xsection{模型性能的评估和优化}{Evaluation and Optimization of Model Performance}
