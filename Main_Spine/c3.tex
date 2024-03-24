@@ -14,10 +14,143 @@
 
 本章将重点介绍用于脑卒中快速鉴别的生成式EIT图像重建算法的模型架构。包括模型总体的结构、模型各部分的结构和作用、模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
 
-\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法模型结构概述}{Architecture of the Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
-传统的EIT图像重建算法
+\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法模型架构}{Architecture of the Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+
+\xsubsection{模型的总体架构}{The Overall Architecture of The Model}
+由于EIT图像重建任务中，不同类型的数据维度不同，同一类型的数据也包含多种表示方式，因此本节将首先建立用于脑卒中快速鉴别的生成式EIT图像重建算法模型，然后再对其各个部分进行逐一阐述。
+
+设待测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
+EIT采集系统的激励模式为邻近激励，单次测量所有激励模式所构成的集合为$S_{stim}$，单次测量电流激励的次数为$n_m$；测量电压的模式为邻近差分，单次激励测量电压的维度为$d_{vm}$。
+则单次测量的电压向量维度为$d_m = d_{vm} * n_m$。（关于EIT的有限元模型和测量模式详见）。
+
+则EIT图像重建的电导率分布向量为 $\sigma$，其维度为 $1 \times d_e$；EIT的测量电压可分别表为矩阵形式$v_{mtx} = \{v_{ij}\}, i \in S_{stim}, j =1,2,...d_vm$。其中$v_{ij}$表示以$i$为激励方式的第$j$次测量的结果。
+向量形式$v_{vector}$，其维度为$d_m$。EIT重建的图像分辨率为$res_{row} \times res_{column}$。
+
+如无特殊说明，本文所采用的参数为\cref{table:param_stm}中的默认值。
+\begin{table}
+    \centering
+    \label{table:param_stm}
+    \caption{参数设置}
+    \begin{tblr}{hlines,
+        vlines,
+        colspec = {X[c] X[c] X[c] X[c]},
+    }
+ 
+    参数 & 值(域) & 参数 & 值(域) \\
+    \midrule
+    $\Omega$ & 圆形场域 $ x \in [-1, 1], y \in[-1, 1]$ & $S_{stim}$ & [i, i+1], i=1:16 \\
+    $d_e$ & 1024 & $n_m$ & 16 \\
+    $d_v$ & 16 & $d_{vm} $ & 16 \\
+    $d_m$ & 256 & $\sigma_i$ & $[1, d_e]$ \\
+    $res_{row}$ & 16 & $res_{column}$ & 16 \\
+
+ 
+    \end{tblr}
+\end{table}
 
 
+如图所示，本文提出的用于脑卒中快速鉴别的生成式EIT图像重建算法模型共包括三个模块，分别是：
+\begin{enumerate}
+    \item 数据编码块。用于对电压数据、电导率数据进行编码，以输出适应图像重建模块的输入维度。此外，根据测试结果表明，该部分还能提高对应电压-电导率数据之间的相关性，进一步优化网络性能（见）。
+    \item 图像重建块。用于拟合EIT图像重建算法，编码后的电导率分布。该模块是本算法的核心部分。
+    \item 图像后处理块。用于解码图像重建块的生成结果，将生成结果映射到用于引导图像的电导率分布所适应的维度。
+\end{enumerate}
+以下将对三个模块分别详细解析。
+\xsubsection{数据编码块}{Data Encoding Block}
+此模块架构如图所示。由于电压向量的表示方式不同，而神经网络对于输入向量的维度敏感度极高，因此此部分首先将输入的电压向量（或矩阵）映射为一维行向量，其长度为$d_m$。
+其中，CVAE、VVAE分别为两个编码器，用于对电导率分布向量和电压分布向量进行编码，其结构分别如\cref{table:VAE_Conductivity}所示。
+
+
+\begin{table}[H]
+    \centering
+    \caption{CVAE编码器架构}
+    \label{table:VAE_Conductivity}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c] X[c]},
+        }
+        \toprule
+        层数 & 网络类型 & 输入通道数 & 输出通道数 \\
+        \midrule
+        1 & Conv2d & 1 & 128 \\
+        2 & VAE\_ResidualBlock & 128 & 128 \\
+        3 & VAE\_ResidualBlock & 128 & 256 \\
+        4 & VAE\_ResidualBlock & 256 & 256 \\
+        5 & VAE\_ResidualBlock & 256 & 512 \\
+        6 & VAE\_ResidualBlock & 512 & 512 \\
+        7 & VAE\_SelfAttention & 512 & 512 \\
+        7 & GroupNorm &  &  \\
+        8 & Conv2d & 512 & 2 \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+
+由于EIT电导率分布数据通常具有二维的特征，因此CVAE利用常见的残差卷积结构作为网络主体，以此来捕获电导率分布的高维特征。
+
+其中，第一层常规的2维卷积，
+第二层至第6成均为残差卷积块，结构如\cref{table:VAEResidualBlock}所示。在这里引入残差卷积，可以有效解决整个卷积神经网络的优化问题，
+并且可以提高网络的训练速度和收敛性，且能降低过拟合的风险。
+在VAE残差卷积块中，用了Group Normalization作为归一化层，能够减少归一化对batch size 的依赖（batch normalization对于batch size的大小非常敏感，其中较小的batch size可能会导致均值和方差不够准确）。
+本文所采取的batch size 受计算机性能所限，为32，因此Group Normalization能显著减少网络的内存开销，并且一定程度上提高网络的性能。
+此外，该模块中采用了SiLU作为激活函数，相较于一些饱和型激活函数（如Sigmoid和Tanh），可以有效避免在输入较大或较小时导致梯度接近于零，从而避免梯度消失的问题。
+
+\begin{table}
+    \centering
+    \caption{VAE残差卷积块}
+    \label{table:VAEResidualBlock}
+    \begin{tblr}{colspec = {X[c] X[c] X[c] X[c]}}
+    \toprule
+    层数 & 网络类型 & 输入通道数 & 输出通道数 \\
+    \midrule
+    1 & residule & & \\
+    2 & GroupNorm & & \\
+    3 & SiLU & &\\
+    4 & 2dConv  & in\_channels &   out\_channels \\
+    5 & GroupNorm & & \\
+    6 & SiLU & & \\
+    7 & 2dConv &  out\_channels &  out\_channels  \\
+    8 & Conv2d(residule) + outputlayer7 & & \\
+    \bottomrule
+    \end{tblr}
+\end{table}
+
+
+    其中第七层为SelfAttention层，该层由一个LayerNorm层 和一个SelfAttention模块和组合而成。
+其允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
+该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。关于SelfAttention的运算细节见\cref{attention}。
+
+\begin{table}[H]
+    \centering
+    \caption{VVAE编码器架构}
+    \label{table:VAE_Voltage}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    层数 & 网络类型 \\
+    \midrule
+    1 & Linear  \\
+    2 & residue 1 \\
+    3 & LayerNorm \\
+    4 & SelfAttention  + residue 1\\
+    5 & residue 2 \\
+    6 & LayerNorm \\
+    7 & Linear \\
+    8 & QuickGELU \\
+    9 & Linear  + residue 2\\ 
+    \bottomrule
+    \end{tblr}
+\end{table}
+
+
+
+
+
+
+\xsubsection{图像重建块}{Image Reconstruction Block}
+\xsubsection{图像后处理块}{Postprocessing Block of the Image}
+
+
+\xsection{用于模型训练和测试的数据集设计与生成}{Design and GeneratioData of Dataset for Model Training and Testing}
 
 如\cref{figure:encoding_1}所示。
 
