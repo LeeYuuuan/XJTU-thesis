@@ -1,4 +1,37 @@
 % !TeX root = ../main.tex
 
-\xchapter{算法与代码}{Algorithm and Code}
+\xchapter{用于脑卒中快速鉴别的生成式EIT图像重建算法模型}{Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+传统的EIT图像重建算法通常利用迭代的思想多次求解EIT正问题、逆问题，以不断最小化每一步求解的电压分布和真实电压分布之间的误差。
+这种做法通常消耗时间长，成像分辨率低。由于EIT正问题仿真模型完备，且相对精确，而常见的深度学习模型则需要大量的训练数据，因此基于深度学习的EIT图像重建模型大大提高了EIT图像重建算法的重建分辨率，
+并且由于训练好的深度学习模型正向推理的过程通常耗时较少，因而能显著提高图像重建算法的时间效率。这也为EIT技术实现床旁实时监测、院前疾病监测提供了技术保障。
+
+目前主流的利用深度学习技术实现的EIT图像重建算法通常以卷积神经网络的各种变体为模型基础，通过添加具有不同功能的模块来优化网络性能。
+此类方法通常使用判别式模型来实现。
+
+扩散概率模型，作为生成式模型的一种，近年来在图像生成领域已经取得了显著的成果。而EIT图像重建问题本质上是建立从电压分布到电导率分布的非线性映射，
+即可以看作是生成目标为电导率分布，且指导模型生成电导率分布的条件为电压分布的带条件的扩散概率模型。
+利用扩散模型实现EIT图像重建算法，由于扩散模型加噪声、去噪声的过程而一定程度上提高了模型抗噪声的能力，并且通过对推断过程的改进，可以有效减少在推理过程中的采样次数，极大程度的缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
+
+本章将重点介绍用于脑卒中快速鉴别的生成式EIT图像重建算法的模型架构。包括模型总体的结构、模型各部分的结构和作用、模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
+
+\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法模型结构概述}{Architecture of the Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+传统的EIT图像重建算法
+
+
+
+如\cref{figure:encoding_1}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{encoding_1.png}
+    \caption{编码后的电导率和真实电导率对比}
+    \label{figure:encoding_1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{cond_voltage.png}
+    \caption{编码后的电导率和真实电导率对比}
+    \label{figure:cond_voltage}
+\end{figure}
 
