@@ -114,9 +114,19 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 \end{table}
 
 
-    其中第七层为SelfAttention层，该层由一个LayerNorm层 和一个SelfAttention模块和组合而成。
-其允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
-该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。关于SelfAttention的运算细节见\cref{attention}。
+    值得注意的是，其第七层为SelfAttention层，该层由一个LayerNorm层 和一个SelfAttention模块和组合而成。
+    
+    Self-attention层是注意力机制的一种应用，其具体的计算过程如下。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
+    该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。
+    
+    具体而言， 由于EIT图像重建任务中，其电导率分布按照扰动目标的存在与否通常可被分为两个部分：背景帧溶液和扰动目标部分。
+    其中，背景帧部分通常模拟电导率分布相对固定的电解质溶液，用于代表脑脊液的区域。这部分通常对于EIT成像结果影响较小（即应该降低该部分对于EIT图像重建结果的影响），因此需要降低模型对于该部分的关注度。
+    而扰动目标区域则用于模拟特定的病灶区域（由于这些区域的含水量与背景帧不同而导致的电导率变化）。这部分通常对于EIT成像结果影响显著（即扩大该部分数据对于EIT重建结果的影响）。
+    而Self Attention机制通过计算一组数据内部的相关性并对每个元素重新赋上加权和，可以有效的关注其输入数据的特定部分。因此在此处引入Self attention层将一定程度上提高扰动目标区域对电压分布或电导率分布中相关部分的关注程度，
+    进而可以有效地提高网络对EIT非线性映射的拟合能力。
+
+
+
 
 \begin{table}[H]
     \centering
@@ -271,7 +281,7 @@ RBF 网络具有与 MLP 类似的输入层和输出层。
 此外，adam优化器对EIT重建结果具有显著的提升。
 
 
-\xsection{用于模型训练和测试的数据集设计与生成}{Design and GeneratioData of Dataset for Model Training and Testing}
+\xsection{训练和测试数据集的设计与生成}{Design and Generation of the Dataset for Model Training and Testing}
 如\cref{figure:encoding_1}所示。
 
 \begin{figure}[h]

@@ -332,15 +332,21 @@ $conv(\cdot)$ 表示卷积操作。
   \label{figure:Resnet}
 \end{figure}
 
+
+
 \xsubsection{激活函数}{Activation Functions}
+
 神经网络在各个领域的广泛应用主要得益于其对于非线性映射的强大拟合能力，
 这种拟合能力，主要来自于非线性激活函数。
 而深度学习模型如CNN，FCN等基础模块的运算通常为大量的线性映射（加法和乘法）。
 因此，选择适当的激活函数，对于深度学习模型性能的提升将是显著的。
 近年来，各式各样的激活函数不断被学者们提出，本文将重点介绍模型从采用的四种激活函数，如
 对于其他未被使用到的激活函数将不做赘述。
+
 \begin{enumerate}
+
   \item ReLU
+
 ReLU是Hinton于2010年提出的激活函数\cite{2010ReLU}，其表达式如\cref{equation:ReLU}所示。
 sigmoid函数在函数值趋近于0和1的时候会变得平坦，即此时的梯度几乎为0。而由于神经网络参数更新的方式通过反向传播进行，则此时对于这类输入或输出趋于0或的节点，其权重几乎不会得到更新，此类神经元被称为饱和神经元。
 因此，这就会导致神经网络中许多节点的参数不再更新，即梯度消失问题。
@@ -358,7 +364,7 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
     \right.
     \end{equation}
 
-    \item Sigmoid Linear Unit (SiLU)
+  \item Sigmoid Linear Unit (SiLU)
   
     SiLU的表达式如\cref{equation:SiLU}所示。
     其相较于ReLU而言，由于其连续可微，故在反向传播的过程中更容易优化。并且SiLU在其定义域内梯度均不为0，这非常有助于在深度神经网络中避免梯度消失的问题。
@@ -371,32 +377,53 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
       \text{SiLU}(x) = x \cdot \sigma(x)
     \end{equation}
   
-    
     其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
   \begin{equation}
     \sigma(x) = \frac{1}{1 + e^{-x}}
   \end{equation}
   
-   
+  \item Gaussian Error Linear Units function (GeLU)
+  
+  GeLU是2016年 Hendrycks等人提出的激活函数\cite{2016GeLU}。但直到其在Transformer和Bert模型中得到应用之后，才广泛进入人们的视野。
+  该函数的表达式如\cref{equation:GeLU}。
+  其中，$\Phi(x)$ 是标准正态分布的累积分布函数（CDF），可以用高斯误差函数（erf）的形式表示。
+  GeLU函数通过给输入向量乘以一个权重，该权重是输入变量的非线性映射（即高斯误差函数），其原理与ReLU和Dropout类似。
+  不同的是，ReLU会为输入向量乘以固定的权重1（或0），而dropout则会为部分输入乘以0（即抛弃该输入）。
+  GeLU所乘的系数，这是与输入变量的自身分布有关。由此，GeLU可以将输入变量$x$平滑地映射到高斯分布的CDF上。
+  重要的是，GeLU在最近的深度学习模型中通常表现出优于ReLU或ELU等传统的激活函数。
+
+  \begin{equation}
+    \label{equation:GeLU}
+    \text{GELU}(x) = x \cdot \Phi(x) 
+  \end{equation}
+   \begin{equation}
+    \label{equation:Gauss}
+    \Phi(x) = \frac{1}{2} \left(1 + \text{erf} \left(\frac{x}{\sqrt{2}}\right)\right)
+  \end{equation}
+  
+  特别注意的是，在实现的过程中可以用如\cref{equation:quickGeLU}所示的函数对GeLU作近似估计：
+  \begin{equation}
+    \label{equation:quickGeLU}
+    \text{quickGELU}(x) = \frac{1}{2}x\left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}\left(x + 0.044715x^3\right)\right)\right)
+  \end{equation}
+  其中，
+  \begin{equation}
+    tanh(x) = \frac{{e^{x} - e^{-x}}}{{e^{x} + e^{-x}}}
+\
+  \end{equation}
 
   \item Softmax
-  \[
-\text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
-\]
+  Softmax函数不同于其他激活函数，其作用是将连续的输出信号映射到离散的空间中，故经常用作分类网络的输出层，其表计算方式如\cref{Softmax}所示。
+  Softmax计算该层每个神经元的输出对所有神经元输出的和的比值。即此过程将每个神经元的输出映射到了$[0,1]$中，并且输出层
+  所有的神经元之和为1。这样做的好处则是输出层的神经元可以表示为一个概率空间，其中每个神经元的输出可以看做是某一个事件发生的概率。
+  因此经常作为多分类问题的输出层使用。
+
+\begin{equation}
+  \label{softmax}
+  \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
+\end{equation}
 
 其中，$\mathbf{z} = (z_1, z_2, ..., z_K)$ 是输入向量，$K$ 是类别的数量。softmax 函数将输入向量的每个元素 $z_i$ 转换为相应的概率值，即满足所有概率之和等于1。
-
-
-
-  \item QuickGELU
-\[
-\text{GELU}(x) = x \cdot \Phi(x)
-\]
-GeLU是2016年\cite{2016GeLU}
-其中，$\Phi(x)$ 是标准正态分布的累积分布函数（CDF），可以用高斯误差函数（erf）的形式表示：
-\[
-\Phi(x) = \frac{1}{2} \left(1 + \text{erf} \left(\frac{x}{\sqrt{2}}\right)\right)
-\]
 
 \end{enumerate}
 \begin{figure}[h]
@@ -421,10 +448,20 @@ GeLU是2016年\cite{2016GeLU}
 
 \xsubsection{优化器}{optimizer}
 
+\xsubsection{注意力机制}{attention}
+注意力机制(Attention)是由 Bahdanau等人于2014年提出的\cite{2014Neural}，最初应用于自然语言处理领域，此后由于其性能优秀而广泛应用在各个领域。
+attention机制让神经网络能够关注输入数据的某些相关的信息，而减少对无用信息的关注。这种思想源于人们的视觉系统，即人们在看到一张图片或视频时通常会关注其中感兴趣的部分。
 
+attention通常包含三个重要的部分，即：
+\begin{enumerate}
+  \item 查询矩阵（query, Q）： 其中的值代表模型应该更加关注输入数据中的某些部分，即Q作为输入向量的某种表示，可以反映模型更加需要关注的内容。
+  \item 键（key, K）：表示输入向量的特征。
+  \item 值（values, V）：是K对应输入向量的另一维度的特征，用于和QK所获得的的相似度进行加权和。
+\end{enumerate}
 
-\xsubsection{注意力机制（Attention）}{Attention}
-\label{attention}
+其基本原理为：首先计算出Q和K的相似度，然后利用Softmax进行归一化算出每个元素所对应各权重，最后利用上一步计算的结果与V中的元素做加权和，以输出最终的结果。
+其中，由于相似度计算方式的不同以及Q、K、V选择方式的不同，就产生了attention的各种应用以及变体，包括自注意力机制（Self-attention），交叉注意力机制（Cross-attention）等。
+
 
 \xsection{生成式模型的原理及架构}{Principle and Architecture of the Generative Model}
 \
