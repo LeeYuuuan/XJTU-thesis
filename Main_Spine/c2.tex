@@ -249,7 +249,8 @@ EIT逆问题在理论上存在唯一解已被先前的研究证实\cite{Sun1993A
 EIT逆问题的求解往往通过迭代的思想，根据每一步正问题求解后边界电压与真实测量结果的误差不断修正系统参数。
 因此实现高质量EIT图像重建算法的关键即优化EIT逆问题求解的过程。
 
-\xsection{深度学习相关理论}{Theory about Deep Learning}
+\xsection{深度学习相关理论}{Theory of Deep Learning}
+近年来深度学习技术发展迅速，各种架构层出不穷，而本文所提出的EIT图像重建算法以深度学习模型为基础，因此本章将重点介绍该算法中所用到的深度学习技术的原理和架构。
 \xsubsection{全连接神经网络}{Fully Connected Neural Networks}
 全连接神经网络(fully connected network, FCN)，也被称为人工神经元网络（Artificial Neural Network，ANN）,多层感知机(multilayer Perceptron，MLP)。
 该思想源于仿生学，其中树突对应MLP的输入层，轴突和轴突未梢对应其隐藏层和输出层。
@@ -294,13 +295,42 @@ FCN更多地是用作一个模型的一小部分。
   \label{figure:FCN}
 \end{figure}
 
-
-
-
-
-
-
 \xsubsection{卷积神经网络}{Convolutional Neural Networks}
+卷积神经网络(Convolutional Neural Networks, CNN)是目前使用范围最广的深度学习模型之一，由其对高维度数据特征提取的能力优异表现而广泛应用于图像处理和计算机视觉任务中。
+一般的CNN通常包含卷积层，池化层，全连接层。其常见的模型结构如所示。\cref{figure:CNN}
+
+\begin{figure}[h]
+  \centering
+\includegraphics[width=0.6\textwidth]{CNN.JPG}
+\caption{卷积神经网络结构示意}
+\label{figure:CNN}
+\end{figure}
+
+卷积层通常利用卷积操作提取图像（或其他输入数据）的空间特征信息。CNN每一层通常具有多个通道（包含多个卷积核），每个卷积和分别与图像进行卷积运算，其的结果将会作为下一层的输入；不同的卷积核可以提取到图像不同类型的空间特征，因此CNN通常相较于FCN有更强大的特征提取能力。
+池化层通常用于减小图像尺寸，同时可以保留输入结果中重要的特征信息。常见的池化操作通常有平均值池化(Average Pool)、最大值池化(Max Pool)等。
+全连接层则是将CNN的输出结果进行重塑，使得输出维度符合实际需要。通常用于分类或回归预测等任务中。
+CNN的运算原理如\cref{equation:CNN}所示。
+\begin{equation}
+  \label{equation:CNN}
+  Y = \sigma\left(\sum_{i=1}^{n} \boldsymbol{W_i} conv(\boldsymbol{X_i}) + \boldsymbol{b}\right)
+\end{equation}
+
+其中：
+$\mathbf{Y}$ 是输出特征图；
+$\sigma(\cdot)$ 是激活函数；
+$n$ 是卷积核的数量；
+$\mathbf{W}_i$ 是第 $i$ 个卷积核的权重；
+$\mathbf{X}_i$ 是与第 $i$ 个卷积核进行卷积的输入特征图；
+$\mathbf{b}$ 是偏置项；
+$conv(\cdot)$ 表示卷积操作。
+自Resnet提出以来\cite{2016Resnet}，残差卷积以广泛应用在各种基于卷积神经网络的模型之中其核心思想是通过残差连接来解决神经网络中的梯度消失以及梯度爆炸问题。其模型如\cref{figure:Resnet}
+通常这种结构可以使得网络直接学习残差（即残差块的输出减去输入）。本文大量采用了残差卷积块作为模型的基础模块，这种方式可以使整个网络更容易优化和训练，进一步提高网络的性能和泛化能力。
+\begin{figure}
+  \centering
+  \includegraphics[width=0.6\textwidth]{Resnet.png}
+  \caption{残差卷积模型}
+  \label{figure:Resnet}
+\end{figure}
 
 \xsubsection{激活函数}{Activation Functions}
 神经网络在各个领域的广泛应用主要得益于其对于非线性映射的强大拟合能力，
@@ -311,7 +341,14 @@ FCN更多地是用作一个模型的一小部分。
 对于其他未被使用到的激活函数将不做赘述。
 \begin{enumerate}
   \item ReLU
+ReLU是Hinton于2010年提出的激活函数\cite{2010ReLU}，其表达式如\cref{equation:ReLU}所示。
+sigmoid函数在函数值趋近于0和1的时候会变得平坦，即此时的梯度几乎为0。而由于神经网络参数更新的方式通过反向传播进行，则此时对于这类输入或输出趋于0或的节点，其权重几乎不会得到更新，此类神经元被称为饱和神经元。
+因此，这就会导致神经网络中许多节点的参数不再更新，即梯度消失问题。
+ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度消失问题，并且由于其中只存在线性映射，因此能大大提高网络的计算效率，进而加快梯度下降过程中的收敛速度。
+此外，该激活函数还被认为具有生物和理性，即与单侧抑制原理相符。
+
   \begin{equation}
+    \label{equation:ReLU}
     \sigma(x) = 
     \left\{
     \begin{aligned}
@@ -320,6 +357,28 @@ FCN更多地是用作一个模型的一小部分。
     \end{aligned}
     \right.
     \end{equation}
+
+    \item Sigmoid Linear Unit (SiLU)
+  
+    SiLU的表达式如\cref{equation:SiLU}所示。
+    其相较于ReLU而言，由于其连续可微，故在反向传播的过程中更容易优化。并且SiLU在其定义域内梯度均不为0，这非常有助于在深度神经网络中避免梯度消失的问题。
+    同时，由于ReLU函数的特性，网络中输出结果小于0的神经元会被抑制（其梯度为0），故会造成网络稀疏，虽然有助于抑制过拟合，但是也会抑制网络对于数据信息的利用率，进而影响模型的性能。
+    并且由于ReLU和Sigmoid函数的输出数据分布的均值均不为零，因此会给给后一层的神经网络引入偏置偏移，进而可能会影响梯度下降的效率。
+    而，SiLU的输出范围在$[0, 1]$之间，因此可以为后续的模块保留一定的动态范围，从而有助于更好地处理数据分布的变化。
+
+    \begin{equation}
+      \label{equation:SiLU}
+      \text{SiLU}(x) = x \cdot \sigma(x)
+    \end{equation}
+  
+    
+    其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
+  \begin{equation}
+    \sigma(x) = \frac{1}{1 + e^{-x}}
+  \end{equation}
+  
+   
+
   \item Softmax
   \[
 \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
@@ -327,22 +386,13 @@ FCN更多地是用作一个模型的一小部分。
 
 其中，$\mathbf{z} = (z_1, z_2, ..., z_K)$ 是输入向量，$K$ 是类别的数量。softmax 函数将输入向量的每个元素 $z_i$ 转换为相应的概率值，即满足所有概率之和等于1。
 
-  \item SiLU
 
-  \[
-  \text{SiLU}(x) = x \cdot \sigma(x)
-  \]
-  
-  其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
-  \[
-  \sigma(x) = \frac{1}{1 + e^{-x}}
-  \]
 
   \item QuickGELU
 \[
 \text{GELU}(x) = x \cdot \Phi(x)
 \]
-
+GeLU是2016年\cite{2016GeLU}
 其中，$\Phi(x)$ 是标准正态分布的累积分布函数（CDF），可以用高斯误差函数（erf）的形式表示：
 \[
 \Phi(x) = \frac{1}{2} \left(1 + \text{erf} \left(\frac{x}{\sqrt{2}}\right)\right)
@@ -371,6 +421,13 @@ FCN更多地是用作一个模型的一小部分。
 
 \xsubsection{优化器}{optimizer}
 
+
+
 \xsubsection{注意力机制（Attention）}{Attention}
 \label{attention}
+
+\xsection{生成式模型的原理及架构}{Principle and Architecture of the Generative Model}
+\
+
+\
 

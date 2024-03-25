@@ -38,7 +38,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
  
     参数 & 值(域) & 参数 & 值(域) \\
     \midrule
-    $\Omega$ & 圆形场域 $ x \in [-1, 1], y \in[-1, 1]$ & $S_{stim}$ & [i, i+1], i=1:16 \\
+    $\Omega$ & 圆形场域 $ x \in [-1, 1], y \in[-1, 1]$ & $S_{stim}$ & [i, i+1], i=(0:15)\%15 \\
     $d_e$ & 1024 & $n_m$ & 16 \\
     $d_v$ & 16 & $d_{vm} $ & 16 \\
     $d_m$ & 256 & $\sigma_i$ & $[1, d_e]$ \\
@@ -52,7 +52,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 如图所示，本文提出的用于脑卒中快速鉴别的生成式EIT图像重建算法模型共包括三个模块，分别是：
 \begin{enumerate}
     \item 数据编码块。用于对电压数据、电导率数据进行编码，以输出适应图像重建模块的输入维度。此外，根据测试结果表明，该部分还能提高对应电压-电导率数据之间的相关性，进一步优化网络性能（见）。
-    \item 图像重建块。用于拟合EIT图像重建算法，编码后的电导率分布。该模块是本算法的核心部分。
+    \item 图像重建块。该部分利用改进的扩散概率模型拟合EIT图像重建映射，输出编码后的电导率分布。该模块是本算法的核心部分。
     \item 图像后处理块。用于解码图像重建块的生成结果，将生成结果映射到用于引导图像的电导率分布所适应的维度。
 \end{enumerate}
 以下将对三个模块分别详细解析。
@@ -150,8 +150,17 @@ VVAE用于编码边界电压分布，因此要求此编码器能实现对电压�
 
 
 \xsubsection{图像重建块}{Image Reconstruction Block}
-此模块利用改良的扩散概率模型实现了EIT图像重建算法，模型结构如图所示。
+此模块利用改良的扩散概率模型实现了EIT图像重建算法，如\cref{figure:ddpm_EIT}所示。
 
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{ddpm_EIT.JPG}
+    \caption{利用扩散概率模型实现EIT图像重建}
+    \label{figure:ddpm_EIT}
+\end{figure}
+其中，通过不断添加高斯噪声使得电导率分布映射到到各向同性的高斯分布的过程称为扩散过程。在该过程中，初始经过编码后的电导率分布将随着时间逐渐扩散，并且不断接近高斯分布。
+而将高斯分布通过加权的方式去噪声的过程通常称为逆扩散过程，
+模型结构如
 其中，Sampler 为用于采样 $t$时刻加噪声后的数据$x_t$，即Diffusion model的正向扩散过程；
 Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要根据输入的当前时间$t$、引导图像生成的条件向量（本文中为测量的边界电压分布）$v$以及当前时刻生成结果$x_t$，
 来预测$t-1$时刻需要减掉的噪声，进一步计算出$x_{t-1}$步的生成结果。
@@ -231,10 +240,18 @@ RBF 网络具有与 MLP 类似的输入层和输出层。
 该网络首先包含 192 个神经元的输入层，分别对应于边界电压的每个维度。接下来有 6 个卷积层，每一步应用 3 × 3 卷积核和最大池化。最后两层应用 3×3 卷积核和 2×2 卷积核平均池，在每个卷积层之后使用指数线性单元（ELU）作为激活函数，因为 ELU 是。
 由于卷积层输出的每个元素都包含原始数据的空间特征，因此输出层包含 512 个神经元，代表更深层次的特征。
 
-利用训练数据初步重建模型，所得的结果如\cref{figure:recons_rbf.JPG}所示，其中，
+利用训练数据初步重建模型，所得的结果如\cref{figure:recons_rbf}所示，其中，
 第一行中的第一张图像是真实值。另外两个分别采用NR方法和学习率=0.0005模型的CNN + RBFNN（Adam）重建。
 第二行的前两张图像由 CNN+ RBFNN (Adam) 重建，学习率 = 0.0001 和 0.001。第三个则则是由单独的CNN（Adam）重建。
-表\cref{table:RBFNNev}为对该网络性能的评估，其中RE和CC分别为相对误差(relative error)和 相关系数(correlation coefficient)。
+\begin{figure}[H]
+    \centering
+    
+    \includegraphics[width=.7\textwidth]{recons_rbf.png}
+    \label{figure:recons_rbf}
+    \caption{重建结果对比}
+\end{figure}
+
+\cref{table:RBFNNev}为对该网络性能的评估，其中RE和CC分别为相对误差(relative error)和 相关系数(correlation coefficient)。
 (表中仅为最佳学习率下的性能其中CNN)
 \begin{table}[H]
     \centering
@@ -242,7 +259,7 @@ RBF 网络具有与 MLP 类似的输入层和输出层。
     \label{table:RBFNNev}
     \begin{tblr}{colspec={X[c] X[c] X[c] X[c]}}
         \toprule
-        模型类型 & CC & RE($\times 10^{-5}$) \\
+        模型类型 & 学习率 & CC & RE($\times 10^{-5}$) \\
         \midrule
         CNN+RBF(Adam) & 0.0005 & 0.9595 & 5.0552 \\ 
         CNN+RBF(SGDM) & 0.8& 0.9020 & 7.2939 \\
