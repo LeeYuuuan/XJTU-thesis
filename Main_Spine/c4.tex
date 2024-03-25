@@ -1,8 +1,52 @@
 % !TeX root = ../main.tex
 
 \xchapter{用于脑卒中快速鉴别的生成式EIT图像重建实验}{The Experiment of EIT Reconstruction for Fast Detection of Stroke}
+在上一章中，我们通过EIDORS生成的仿真数据对本文提出的生成式EIT图像重建网络进行了训练和评估，验证了该模型能显著提高EIT图像重建结果的重建分辨率。
+本章将在该模型的基础上，通过实验验证该模型用于脑卒中快速鉴别的可行性以及其算法的优势。此外，本章还会对训练集的生成进行了研究，并且根据研究结果优化了网络结构。
 
-\xsection{实验结果}{Experiment Results}
+\xsection{用于脑卒中快速鉴别的生成式EIT图像重建物理实验}{The Physical Experiment of EIT Reconstruction for Fast Detection of Stroke}
+
+\xsubsection{实验方案}{Experiment Scheme and Design}
+
+用于脑卒中快速鉴别的生成式EIT图像重建算法的物理实验流程如下图所示。其中包括EIT成像目设计与制作，EIT采集系统设计与搭建，利用扰动目标和EIT采集系统获得数据以及根据测量数据评估重建算法四个步骤。
+本节将重点介绍EIT成像目标的设计与制作以及EIT采集系统的设计与搭建部分。
+
+\xsubsection{EIT成像目标的设计与制作}{Design and Manufacture of EIT Imaging Target}
+EIT成像目标包括背景帧以及扰动目标，本节将首先介绍扰动目标的制作流程，随后将阐述背景帧的制作流程。
+
+由于脑卒中可被分为缺血性卒中和失血性卒中，缺血性卒中由于其病灶区域血液（水）含量较少，因此其对应的电导率较低。
+而失血性卒中由于其病灶区域大量出血，因此其对应的电导率通常较高。
+琼脂是亲水性胶体，在一定温度条件下，向琼脂溶液中加入一定量的电介质即可使其具有特定的电导率。
+因此本实验将用琼脂和氯化钠以及水制作出具有不通电导率的琼脂快，来代表不同类型卒中的病灶区域。
+
+具体步骤如\cref{figure:experiment}所示，
+\begin{enumerate}
+    \item 用电子秤称取1.5g的琼脂粉。
+    \item 将称好的琼脂粉倒入烧杯中。
+    \item 像烧杯中加入100ml的蒸馏水，并将其与琼脂粉冲分混合。
+    \item 再利用电子秤称取一定量的氯化钠粉末。
+    \item 将称取的氯化钠粉末倒入琼脂溶液中。
+    \item 利用高温加热炉，将上述混合溶液加热纸沸腾，并在加热的过程中冲分搅拌使其溶解（根据实测在常压下需要保持270摄氏度左右）。
+    \item 将充分溶解的溶液倒入半径不同的陶瓷容器中，静置2小时待其凝固。
+    \item 将凝固的琼脂快取出备用。
+\end{enumerate}
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.9\textwidth]{experiment.png}
+    \caption{EIT扰动目标制作流程(1)}
+    \label{figure:experiment}
+\end{figure}
+
+利用电阻率测量仪以及一橙色： 电导率 1S/m 蓝色大约 0.02g NaCl/100ml 0.5S/m
+
+\xsubsection{EIT采集系统设计与搭建}{Design and Construction of EIT Measurment System}
+
+\xsection{实验过程}{Experimental Process}
+
+\xsection{实验结果与分析}{Experiment Results}
+
 如\cref{figure:res_high}, \cref{figure:res_high}所示
 \begin{figure}[h]
     \centering

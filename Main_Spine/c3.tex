@@ -17,6 +17,7 @@
 \xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法模型架构}{Architecture of the Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
 \xsubsection{模型的总体架构}{The Overall Architecture of The Model}
+\label{section:Model}
 由于EIT图像重建任务中，不同类型的数据维度不同，同一类型的数据也包含多种表示方式，因此本节将首先建立用于脑卒中快速鉴别的生成式EIT图像重建算法模型，然后再对其各个部分进行逐一阐述。
 
 设待测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
@@ -29,7 +30,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 如无特殊说明，本文所采用的参数为\cref{table:param_stm}中的默认值。
 \begin{table}
     \centering
-    \label{table:param_stm}
+    
     \caption{参数设置}
     \begin{tblr}{hlines,
         vlines,
@@ -46,6 +47,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 
  
     \end{tblr}
+    \label{table:param_stm}
 \end{table}
 
 
@@ -57,13 +59,20 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 \end{enumerate}
 以下将对三个模块分别详细解析。
 \xsubsection{数据编码块}{Data Encoding Block}
-此模块架构如图所示。由于电压向量的表示方式不同，而神经网络对于输入向量的维度敏感度极高，因此此部分首先将输入的电压向量（或矩阵）映射为一维行向量，其长度为$d_m$。
-其中，CVAE、VVAE分别为两个编码器，用于对电导率分布向量和电压分布向量进行编码，其结构分别如\cref{table:VAE_Conductivity}所示。
+此模块架构如\cref{figure:Pretrain}所示。由于电压向量的表示方式不同，而神经网络对于输入向量的维度敏感度极高，因此此部分首先将输入的电压向量（或矩阵）映射为一维行向量，其长度为$d_m$。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{Pretrain.PNG}
+    \caption{数据编码块架构}
+    \label{figure:Pretrain}
+\end{figure}
+电导率编码器（CEncoder）、电压编码器（VEncoder）分别为两个编码器，用于对电导率分布向量和电压分布向量进行编码。
+其中，CEncoder的结如图所示，该部分的具体参数如\cref{table:VAE_Conductivity}所示。
 
 
 \begin{table}[H]
     \centering
-    \caption{CVAE编码器架构}
+    \caption{CEncoder架构}
     \label{table:VAE_Conductivity}
     \begin{tblr}{
         colspec = {X[c] X[c] X[c] X[c]},
@@ -116,16 +125,29 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 
     值得注意的是，其第七层为SelfAttention层，该层由一个LayerNorm层 和一个SelfAttention模块和组合而成。
     
-    Self-attention层是注意力机制的一种应用，其具体的计算过程如下。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
+    Self-attention层是注意力机制的一种应用，其具体的计算过程如\cref{algorithm:Self_attention}。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
     该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。
     
+\begin{algorithm}[H]
+    
+    \caption{Self Attention Layer}
+    \begin{algorithmic}[1]
+        \State \textbf{Input:} 输入向量 $\boldsymbol{X}$
+        \State 初始化权重矩阵 $W_Q$, $W_K$, $W_V$
+        \State 计算Q、K、V $Q = XW_Q, \quad K = XW_K, \quad V = XW_V$
+        \State 计算Attention  $A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \quad $ $d_k$ 为Q和K的维度 
+        \State 计算加权后的结果 $Z = AV$
+        \State 对Z进行线性变换，获得Self-Attention最终的输出  $\text{Self-Attention}(X) = ZW_O$
+        \State \textbf{Output:} $\text{Self-Attention}(X)$
+    \end{algorithmic}
+    \label{algorithm:Self_attention}
+\end{algorithm}
+
     具体而言， 由于EIT图像重建任务中，其电导率分布按照扰动目标的存在与否通常可被分为两个部分：背景帧溶液和扰动目标部分。
     其中，背景帧部分通常模拟电导率分布相对固定的电解质溶液，用于代表脑脊液的区域。这部分通常对于EIT成像结果影响较小（即应该降低该部分对于EIT图像重建结果的影响），因此需要降低模型对于该部分的关注度。
     而扰动目标区域则用于模拟特定的病灶区域（由于这些区域的含水量与背景帧不同而导致的电导率变化）。这部分通常对于EIT成像结果影响显著（即扩大该部分数据对于EIT重建结果的影响）。
     而Self Attention机制通过计算一组数据内部的相关性并对每个元素重新赋上加权和，可以有效的关注其输入数据的特定部分。因此在此处引入Self attention层将一定程度上提高扰动目标区域对电压分布或电导率分布中相关部分的关注程度，
     进而可以有效地提高网络对EIT非线性映射的拟合能力。
-
-
 
 
 \begin{table}[H]
