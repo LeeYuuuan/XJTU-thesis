@@ -17,7 +17,34 @@ EIT成像目标包括背景帧以及扰动目标，本节将首先介绍扰动�
 由于脑卒中可被分为缺血性卒中和失血性卒中，缺血性卒中由于其病灶区域血液（水）含量较少，因此其对应的电导率较低。
 而失血性卒中由于其病灶区域大量出血，因此其对应的电导率通常较高。
 琼脂是亲水性胶体，在一定温度条件下，向琼脂溶液中加入一定量的电介质即可使其具有特定的电导率。
-因此本实验将用琼脂和氯化钠以及水制作出具有不通电导率的琼脂快，来代表不同类型卒中的病灶区域。
+因此本实验将用琼脂和氯化钠以及水制作出具有不同电导率的琼脂快，来代表不同类型卒中的病灶区域。
+本实验将采用2个不同的电导率值作为扰动目标的电导率分布，其分别为0.05S/m 和 0.05S/m。
+根据多次试验得，在出每100g水，1.5g琼脂粉的条件下，其琼脂快的电导率$\sigma$(S/m)与氯化钠的含量$x$(g)可用\cref{equation:NACL}近似拟合。
+\begin{equation}
+    \centering
+    \label{equation:NACL}
+    \sigma = 2.008x + 0.0207
+\end{equation}
+此外，本实验用于盛放琼脂并使其凝固的容器为如图所示底面半径不同的陶瓷容器，其底面直径分别为4cm,3.5cm和2.5cm。
+故本所所制作的扰动目标的详细参数如\cref{table:target}所示。
+\begin{table}
+    \centering
+    \caption{扰动目标的参数}
+    \begin{tblr}{colspec = {X[c] X[c] X[c] X[c]}}
+        \toprule
+        编号 & 电导率(S/m) & 底面直径(cm) & 每100g水所需的氯化钠含量(g)\\
+        \midrule
+        1 & 0.05 & 4 & 0.02 \\
+        2 & 0.05 & 3.5 & 0.02 \\
+        3 & 0.05 & 2.5 & 0.02 \\
+        4 & 0.5 & 4 & 0.23 \\
+        5 & 0.5 & 3.5 & 0.23 \\
+        6 & 0.5 & 2.5 & 0.23 \\
+        \bottomrule
+    \end{tblr}
+    \label{table:target}
+\end{table}
+
 
 具体步骤如\cref{figure:experiment}所示，
 \begin{enumerate}
@@ -35,13 +62,49 @@ EIT成像目标包括背景帧以及扰动目标，本节将首先介绍扰动�
 \begin{figure}[H]
     \centering
     \includegraphics[width=.9\textwidth]{experiment.png}
-    \caption{EIT扰动目标制作流程(1)}
+    \caption{EIT扰动目标制作流程}
     \label{figure:experiment}
 \end{figure}
 
-利用电阻率测量仪以及一橙色： 电导率 1S/m 蓝色大约 0.02g NaCl/100ml 0.5S/m
+随后利用电阻率测量仪测量上述扰动目标的电导率，验证其电导率的准确性。
+本实验中，为了更好的区分不同电导率的扰动目标，用黄色琼脂块表示电导率为0.5S/m的扰动目标
+，而用蓝色琼脂块表示电导率为0.05S/m的扰动目标。如图\cref{QiongZhiKuai}所示
+
+\begin{figure}[h]
+    \centering
+
+    \includegraphics[width=.7\textwidth]{QiongZhiKuai.png}
+    \caption{琼脂块制作示意图}
+    \label{figure:QiongZhiKuai}
+\end{figure}
+
 
 \xsubsection{EIT采集系统设计与搭建}{Design and Construction of EIT Measurment System}
+EIT采集系统通常包括EIT数据采集测量仪器、用于激励和测量的电极、用于连接激励和测量仪与电极的电缆以及用于控制实验进程、分析和保存数据的控制器（通常为PC）。
+本实验采用标准的16电极圆形物理模型容器(16 phantom tank)作为待测场，如\cref{figure:Phantom}所示。该水池的外直径为20cm，内直径为19.4cm，其高度为15cm，材质为丙烯酸玻璃。
+该模型共包含16个电极，其材质均为不锈钢A2，切16个电极位于同一平面上，每个电极之间的距离相等。其与电缆连接的部分为香蕉插头，材质均为不锈钢。
+
+电缆为标准的EIT测量电缆集，如\cref{figure:CableSet}所示，其长度为1m，连接类型均为香蕉插头。
+
+测量仪器采用Sciospec Scientific Instruments公司所生产的16通道EIT系统。本实验所采用的的电极激励模式为邻近激励，即单次测量电流的输入和输出分别为1号电极和2号电极，2号电极和3号电极，以此类推，共16次激励。
+每次电流激励下该系统将分别测量16个电极的电位，故单次测量所获得的的电位向量为256维。另外，本实验所测得的数据是在单频激励下所得到的，其激励电流的频率为50khz，
+激励电流的强度0.0005A。每秒采样的次数为1帧（即该系统理论上每秒向PC输出1组测量电位）。
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{Phantom.png}
+    \caption{EIT待测场设置}
+    \label{figure:Phantom}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{CableSet.png}
+    \caption{EIT连接电缆图示}
+    \label{figure:CableSet}
+\end{figure}
+    
+
 
 \xsection{实验过程}{Experimental Process}
 
