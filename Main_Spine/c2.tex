@@ -522,7 +522,7 @@ attention通常包含三个重要的部分，即：
 其中，由于相似度计算方式的不同以及Q、K、V选择方式的不同，就产生了attention的各种应用以及变体，包括自注意力机制（Self-attention），交叉注意力机制（Cross-attention）等。
 
 
-\xsection{生成式模型及扩散概率模型}{Generative Model and Denoising Diffuison Probabilistic Models}
+\xsection{生成式模型}{Generative Models}
 EIT图像重建算法的任务目标即是在给定边界条件下生成出符合原始电导率分布的图像。
 通常基于深度学习模型设计的EIT图像重建算法利用电压-电导率分布数据构件数据集，学习出电压到电导率分布的非线性映射以实现对EIT待测场中的目标信息进行成像。
 此类深度学习模型的目标是估计$p(C \mid v)$（在已有的观测数据分布上估计目标变量的概率分布），其中$C$是电导率分布的真实概率分布，$v$是测量电压构成的向量组。
@@ -537,8 +537,8 @@ EIT图像重建算法的任务目标即是在给定边界条件下生成出符�
 \end{equation}
 
 故生成式模型的本质是建立一个映射$X=g(Z)$，从隐变量的分布（latent variable）$Z$生成数据的真实分布。通常假设隐变量的分布为高斯分布(Gaussian Distribution)。
-生成式模型的学习目标即通过一组数据（$\mbs{X} = \{X_1, X_2, ..., X_i\}， i = 1, 2, ..., n$）学习其真实分布$p(X)$。即假设该数据集是从一个概率分布$p(x)$中采样的结果，生成式模型希望根据该采样结果（即数据集）恢复出这个概率分布。此后通过采样即可生成符合此分布的数据。
-而由恢复该分布较为困难，因此根据贝叶斯公式，在此过程中引入隐变量$Z$，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}。
+生成式模型的学习目标即通过一组数据（$\mbs{X} = \{X_1, X_2, ..., X_i\}, i = 1, 2, ..., n$）学习其真实分布$p(X)$。即假设该数据集是从一个概率分布$p(x)$中采样的结果，生成式模型希望根据该采样结果（即数据集）恢复出这个概率分布。此后通过采样即可生成符合此分布的数据。
+而由恢复该分布较为困难，因此根据贝叶斯公式，在此过程中引入隐变量$Z$，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}（离散情况），\cref{equation:GenerativeModelcon}（连续情况）。
 
 \begin{equation}
   \centering
@@ -546,50 +546,109 @@ EIT图像重建算法的任务目标即是在给定边界条件下生成出符�
   P(x) = \sum_{Z}^{}p(x\mid Z)p(Z)
 \end{equation}
 
+\begin{equation}
+  \centering
+  \label{equation:GenerativeModelcon}
+  p(x) = \int_{z \in Z}^{} p(x|z)p(z)\diff z
+\end{equation}
+
 变分自编码器（Variational Auto Encoder, VAE）就是生成式模型的一种，如\cref{figure:VAE}所示。其编码器将原始的数据分布$\mathbb{R}^n$映射到隐变量空间$\mathbb{R}^d$中，其隐变量空间为一组高斯分布的均值和方差。
-即该编码器需要通过已知的观测样本$\mbs{X}$，计算出$p(z|x)$，如式\cref{equation:bysVAE}。
 \begin{figure}[h]
   \centering
   \includegraphics[width=.7\textwidth]{VAE.png}
   \caption{VAE架构}
   \label{figure:VAE}
   \end{figure}
+
+即该编码器需要通过已知的观测样本$\mbs{X}$，计算出$p(z|x)$，如式\cref{equation:bysVAE}。
+
 \begin{equation}
   \centering
   \label{equation:bysVAE}
   p(z \mid x) = \frac{p(x \mid z)p(z)}{p(x)} 
 \end{equation}
+
 然而，由于无法事先确定数据集采样的源分布$p(x)$，因此VAE通过利用一个可控制的分布$q(z|x)$来近似估计$p(z|x)$。
 而由于K-L散度（Kullback-Leibler divergence，）可以很好地度量两个概率分布$P$和$q$之间的差异（该度量为非对称性的，如\cref{equation:KLdivergence}），
-故VAE的本质即最小化$p(z|x)$和$q(z|x)$的K-L散度。
+
 \begin{equation}
   \centering
   \label{equation:KLdivergence}
-  D_{\text{KL}}(P \| Q) = \sum_{x} P(x) \log \left( \frac{P(x)}{Q(x)} \right)
+  D_{\text{KL}}(P \| Q) = \int_{x} P(x) \log \left( \frac{P(x)}{Q(x)} \right)
 \end{equation}
-
-\cref{equation:GenerativeModel}（离散情况，若连续情况则为\cref{equation:GenerativeModelcon}）。
-
+故VAE的本质即最小化$p(z|x)$和$q(z|x)$的K-L散度（如\cref{equation:VAEKL}）。
 \begin{equation}
   \centering
-  \label{GenerativeModelcon}
-  p(x) = \int_{z \in Z}^{} p(x|z)p(z)\diff z
+  \label{equation:VAEKL}
+  \min D_{\text{KL}}(q(z|x)\|p(z|x)) = \int_{x}q(z|x)\log \frac{q(z|x)}{p(z|x)}\diff Z
 \end{equation}
+上式经过计算可等价为\cref{equation:KLeq}，
+\begin{equation}
+  \centering
+  \max  \mathbb{E}_{z\sim q(z|x)} \log p(x|z) - D_{\text{KL}}(q(z|x)\|p(z))
+  \label{equation:KLeq}
+\end{equation}
+即，最大化在$z$上采样的结果经过VAE后输出的重构结果为$x$的概率（等价于最小化网络输出结果与真实数据之间的均方误差），且让$q(z|x)$和$p(z)$尽可能相似。
 
-因此，VAE的学习目标即利用神经网络拟合出$p(X_i \mid Z)$，而由于其为高斯分布，故实际学习到的参数为该分部的均值和方差。
-该网络的推理过程通过
 
-
-而Jonathan Ho等人提出的去噪的扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models, DDPM）以及后续的各种变体如条件扩散模型\cite{CondDDPM}（Conditional Denoising Diffusion Probabilistic Models），稳定扩散\cite{StableDiffusion}（Stable Diffusion）等已在图像生成领域取得了显著的成绩。
+除了VAE之外，Jonathan Ho等人提出的去噪的扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models, DDPM）以及后续的各种变体如条件扩散模型\cite{CondDDPM}（Conditional Denoising Diffusion Probabilistic Models），稳定扩散\cite{StableDiffusion}（Stable Diffusion）等已在图像生成领域取得了显著的成绩。
 扩散模型的思想源于非平衡统计物理，其通过迭代完成正向的扩散过程从而系统、缓慢地破坏数据的结构。此后利用深度学习模型学习逆扩散的过程，从而恢复数据中的结构。由此产生了一个高度灵活且易于处理的数据生成模型。
 其中，扩散的迭代次数通常可设定为千次左右。
 
-扩散模型作为生成式模型的一种，
+该模型共包含两个主要部分，即正向扩散部分和逆向数据恢复部分。均可看作是一个参数化的马尔科夫链（Markov Chain）。
+该模型同样是一个隐变量模型，即$p_\theta(x_o) \coloneqq \int p_\theta(x_{0:T})\diff x_{1:T}$，其中$x_1,...x_T$为隐变量，其大小和输入的$x_0$相同。
+
+正向或（扩散）过程（froward process 或 diffusion process）如\cref{figure:Diffusionforward}所示。
+
+\begin{figure}[h]
+  \includegraphics[width=.7\textwidth]{diffusionforward.png}
+  \caption{DDPM加噪过程}
+  \label{figure:Diffusionforward}
+\end{figure}
+
+该过程通过向原始的数据中不断加入已知的高斯噪声，随着噪声的不断增加该数据将趋近于一个高斯分布。
+其中，$x_0$是原始的数据分布，$x_1, x_2,..,x_t$，$t=1:T$是第$t$步加噪声后的结果。
+由于马尔科夫链中第$t$步的$x_t$只与$t_1$时刻的$x_{t-1}$有关，故可得近似后验概率$q(x{1:T}|x_0)$为：
+
+\begin{equation}
+  \centering
+  q(x_{1:T}|x_0) = \prod_{t=1}{T} q(x_t|x_{t-1}) \qquad
+  q(x_t|x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}x_{t-1}, \beta_t\mbs{I})
+\end{equation}
+其中，$t$为时间轴，通常定义为$0-1000$（线性，也可以为cosine等），$\beta_t$是方差序列（variance schedue）用来控制噪声与信号混合的比例，
+满足$\beta_1 < \beta_2 <...<\beta_T$。
+经推导\cite{DDPM}可得出$t$t时刻的隐变量$x_t$可由原始数据分布$x_0$得到：
+\begin{equation}
+  \centering
+  q(x_t|x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha_t}x_0}, (1-\bar{\alpha}\mbs{I}))
+\end{equation}
+
+其中，逆向过程（resverse process）是从一个高斯分布中不断去噪声，从而恢复出原始的数据分布的过程，如\cref{figure:Diffusionreverse}所示。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.7\textwidth]{diffusionreverse.jpg}
+  \caption{DDPM去噪过程}
+  \label{figure:Diffusionreverse}
+\end{figure}
+
+该过程定义为$p_\theta(x_{0:T})$，则只要得到$q(x_{t-1}|x_t)$，就可以从一个高斯噪声中还原出原本的数据点$x_0$。
+该模型利用$p_\theta(x_{t-1}|x_{t})$来近似该分布。
+\begin{equation}
+  \centering
+  p_\theta(x_{T}) = \prod_{t=1}{T} q(x_{t-1}|x_{t}) \qquad
+  p_\theta(x_{t-1}|x_{t}) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \Sigma_\theta(x_t, t))
+\end{equation}
+
+在上式中，均值
+\begin{equation}
+  \mu_\theta = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1-\hat{\alpha_t}}}\epsilon_\theta(x_t, t))  
+\end{equation}
+故只需要利用神经网络拟合出从$t$时刻到$t-1$时刻所需要添加的噪声$\epsilon_\theta(x_t, t)$网络即可推断出原始的数据点。
+
+去噪声网络通常利用U-net实现，其通过最小化每一步骤中真实加入的噪声和该网络生成的噪声的均方误差从而训练整个网络使其收敛。
+此后，该模型正向推理的过程从一个高斯噪声开始，经过$T:1$时刻通过训练好的去噪网络分别计算出每个时刻需要去掉的噪声，从而获得生成的最终结果。
 
 
 
-
-
-
-该模型共包含两个主要部分，即正向扩散部分和逆向数据恢复部分。
 
