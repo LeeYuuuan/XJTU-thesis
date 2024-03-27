@@ -525,10 +525,61 @@ attention通常包含三个重要的部分，即：
 \xsection{生成式模型及扩散概率模型}{Generative Model and Denoising Diffuison Probabilistic Models}
 EIT图像重建算法的任务目标即是在给定边界条件下生成出符合原始电导率分布的图像。
 通常基于深度学习模型设计的EIT图像重建算法利用电压-电导率分布数据构件数据集，学习出电压到电导率分布的非线性映射以实现对EIT待测场中的目标信息进行成像。
+此类深度学习模型的目标是估计$p(C \mid v)$（在已有的观测数据分布上估计目标变量的概率分布），其中$C$是电导率分布的真实概率分布，$v$是测量电压构成的向量组。
+而实际情况下该很难拟合出上述复杂的概率分布模型，故深度学习模型通常有两类不同的做法，即判别式模型和生成式模型。
 
-而生成式模型的本质是建立一个映射$X=g(Z)$，从隐变量的分布（latent variable）$Z$生成数据的真实分布。通常假设隐变量的分布为各向同性的高斯分布(Gaussian Distribution)。
-生成式模型的学习目标即通过一组数据（$\mbs{X} = \{X_1, X_2, ..., X_i\}$）学习其真实分布$p(X)$。即假设该数据集是从一个概率分布$p(x)$中采样的结果，生成式模型希望根据该采样结果（即数据集）恢复出这个概率分布。此后通过采样即可生成符合此分布的数据。
-而由恢复该分布较为困难，因此根据贝叶斯公式，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}。
+判别式模型如卷积神经网络等通常通以$P(C \mid V=v)$为目标，即拟合$f(v) = p(c \mid v)$这一非线性映射。
+不同于判别式模型，生成式模型则是先估计出$p(v \mid c)$ 再通过贝叶斯公式（\cref{equation:bysf}）计算出$p(c \mid v)$。
+\begin{equation}
+  \centering
+  \label{equation:bysf}
+  p(c \mid v) = \frac{p(c, v)}{p(v)} = \frac{p(v \mid c)p(c)}{p(v)} 
+\end{equation}
+
+故生成式模型的本质是建立一个映射$X=g(Z)$，从隐变量的分布（latent variable）$Z$生成数据的真实分布。通常假设隐变量的分布为高斯分布(Gaussian Distribution)。
+生成式模型的学习目标即通过一组数据（$\mbs{X} = \{X_1, X_2, ..., X_i\}， i = 1, 2, ..., n$）学习其真实分布$p(X)$。即假设该数据集是从一个概率分布$p(x)$中采样的结果，生成式模型希望根据该采样结果（即数据集）恢复出这个概率分布。此后通过采样即可生成符合此分布的数据。
+而由恢复该分布较为困难，因此根据贝叶斯公式，在此过程中引入隐变量$Z$，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}。
+
+\begin{equation}
+  \centering
+  \label{equation:GenerativeModel}
+  P(x) = \sum_{Z}^{}p(x\mid Z)p(Z)
+\end{equation}
+
+变分自编码器（Variational Auto Encoder, VAE）就是生成式模型的一种，如\cref{figure:VAE}所示。其编码器将原始的数据分布$\mathbb{R}^n$映射到隐变量空间$\mathbb{R}^d$中，其隐变量空间为一组高斯分布的均值和方差。
+即该编码器需要通过已知的观测样本$\mbs{X}$，计算出$p(z|x)$，如式\cref{equation:bysVAE}。
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.7\textwidth]{VAE.png}
+  \caption{VAE架构}
+  \label{figure:VAE}
+  \end{figure}
+\begin{equation}
+  \centering
+  \label{equation:bysVAE}
+  p(z \mid x) = \frac{p(x \mid z)p(z)}{p(x)} 
+\end{equation}
+然而，由于无法事先确定数据集采样的源分布$p(x)$，因此VAE通过利用一个可控制的分布$q(z|x)$来近似估计$p(z|x)$。
+而由于K-L散度（Kullback-Leibler divergence，）可以很好地度量两个概率分布$P$和$q$之间的差异（该度量为非对称性的，如\cref{equation:KLdivergence}），
+故VAE的本质即最小化$p(z|x)$和$q(z|x)$的K-L散度。
+\begin{equation}
+  \centering
+  \label{equation:KLdivergence}
+  D_{\text{KL}}(P \| Q) = \sum_{x} P(x) \log \left( \frac{P(x)}{Q(x)} \right)
+\end{equation}
+
+\cref{equation:GenerativeModel}（离散情况，若连续情况则为\cref{equation:GenerativeModelcon}）。
+
+\begin{equation}
+  \centering
+  \label{GenerativeModelcon}
+  p(x) = \int_{z \in Z}^{} p(x|z)p(z)\diff z
+\end{equation}
+
+因此，VAE的学习目标即利用神经网络拟合出$p(X_i \mid Z)$，而由于其为高斯分布，故实际学习到的参数为该分部的均值和方差。
+该网络的推理过程通过
+
+
 而Jonathan Ho等人提出的去噪的扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models, DDPM）以及后续的各种变体如条件扩散模型\cite{CondDDPM}（Conditional Denoising Diffusion Probabilistic Models），稳定扩散\cite{StableDiffusion}（Stable Diffusion）等已在图像生成领域取得了显著的成绩。
 扩散模型的思想源于非平衡统计物理，其通过迭代完成正向的扩散过程从而系统、缓慢地破坏数据的结构。此后利用深度学习模型学习逆扩散的过程，从而恢复数据中的结构。由此产生了一个高度灵活且易于处理的数据生成模型。
 其中，扩散的迭代次数通常可设定为千次左右。
@@ -538,11 +589,7 @@ EIT图像重建算法的任务目标即是在给定边界条件下生成出符�
 
 
 
-\begin{equation}
-  \centering
-  \label{equation:GenerativeModel}
-  P(x) = \sum_{Z}^{}p(x\mid Z)p(Z)
-\end{equation}
+
 
 该模型共包含两个主要部分，即正向扩散部分和逆向数据恢复部分。
 
