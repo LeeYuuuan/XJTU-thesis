@@ -250,4 +250,15 @@ EIT sensors.（微 EIT 传感器的细胞成像）中 [27]。
 
 \xsubsection{生成式模型}{Generative Model}
 
+根据深度学习模型所拟合的目标分布不同，可将其分为判别式模型和生成式模型两类。
+其中，判别式模型如MLP、CNN等，目前已经广泛应用图像分类、图像分割以及其他领域的工程实践中。而生成式模型近年来才逐渐被人们重视起来。
+生成式模型通常通过估计原始数据和观测变量的联合概率分布实现对于数据分布的学习。
+传统的以朴素贝叶斯(Naive Bayes)高斯混合模型(GMMs)隐马尔可夫模型(hmm)线性判别分析 (LDA)为代表。
+
+近年来主流的生成式模型通常包括Kingma等人提出的变分自编码器（Variational Auto Encoder）\cite{2013Auto}，
+Goodfellow等人于2014年提出的生成式对抗网络\cite{2014Generative}（Generative Adversarial Nets, GAN）
+以及括2015年Jascha 等人提出的扩散模型\cite{DiffusionModel}（Diffusion model）。值得注意的是，
+直到Jonathan Ho等人利用去噪扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models,DDPM）生成出了高质量的图像以及之后，
+以扩散概率模型为代表的生成式模型在图像生成、图像重建领域极强的潜力逐渐被人们重视起来。
+
 \xsection{本文研究内容及结构安排}{Main Content and Structure}
