@@ -414,22 +414,23 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
 
   \item Softmax
 
-  Softmax函数不同于其他激活函数，其作用是将连续的输出信号映射到离散的空间中，故经常用作分类网络的输出层，其表计算方式如\cref{Softmax}所示。
+  Softmax函数不同于其他激活函数，其作用是将连续的输出信号映射到离散的空间中，故经常用作分类网络的输出层，其表计算方式如\cref{equation:softmax}所示。
   Softmax计算该层每个神经元的输出对所有神经元输出的和的比值。即此过程将每个神经元的输出映射到了$[0,1]$中，并且输出层
   所有的神经元之和为1。这样做的好处则是输出层的神经元可以表示为一个概率空间，其中每个神经元的输出可以看做是某一个事件发生的概率。
   因此经常作为多分类问题的输出层使用。
 
 \begin{equation}
-  \label{softmax}
+  \label{equation:softmax}
   \text{softmax}(\mathbf{z})_i = \frac{e^{z_i}}{\sum_{j=1}^{K} e^{z_j}}
 \end{equation}
 
 其中，$\mathbf{z} = (z_1, z_2, ..., z_K)$ 是输入向量，$K$ 是类别的数量。softmax 函数将输入向量的每个元素 $z_i$ 转换为相应的概率值，即满足所有概率之和等于1。
 
 \end{enumerate}
+
 \begin{figure}[h]
   \centering
-\includegraphics[width=0.9\textwidth]{activation.png}
+\includegraphics[width=0.7\textwidth]{activation.png}
 \caption{激活函数}
 \label{figure:activation}
   
@@ -442,10 +443,31 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
 
 本文将重点介绍模型中使用到的以下三种归一化：
 \begin{enumerate}
-  \item 层归一化（Layer Normalization）
-  \item 批归一化（Batch Normalization）
-  \item 组归一化（Group Normalization）
+  \item 批归一化（Batch Normalization, BN）
+
+  
+  通过计算一个batch中每一个通道内的所有数据的每一个特征的均值和方差，然后利用\cref{equation:norm}
+\begin{equation}
+  \label{equation:norm}
+  res = \frac{x - E\left[ x\right]}{\sqrt{Var\left[ x\right] + \epsilon}} * \gamma + \beta
+\end{equation}
+
+其中，$E\left[ x\right], Var\left[ x\right]$分别是上述数据的均值和方差， $\epsilon$为一趋于0的常数，确保分母大于零，
+$\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
+
+该方法可以加快网络的收敛，提高其训练过程的稳定性，还有助于避免产生梯度消失、梯度爆炸的问题。
+
+  \item 组归一化（Group Normalization, GN）
+  
+  GN将通道划分成若干个组，进而每个组分别进行归一化。其归一化的公式与BN相同。
+  
+  由于BN通常对batch size 的选择非常敏感，而GN通常选择固定的组数（本文大量使用到GN，其中归一化组数选择为32），
+  从而使得归一化的过程不受到batch size的限制，可以有效应用在小批次的样本中。
+
+  \item 层归一化（Layer Normalization, LN）
+  LN就是BN在组数为1的特殊情况，即对该次输入所有通道的所有元素进行归一化，该方法同样不依赖于batch size，其更新公式同上。
 \end{enumerate}
+
 
 \xsubsection{优化器}{optimizer}
 大多数神经网络的参数更新是通过反向传播算法实现的，其利用损失函数计算输出层的结果与真实的标签数据分布之间的误差，称为网络输出层的损失（loss），然后根据链式法则求出该损失对每一层神经元的参数的损失，然后利用这些损失对网络中每一个参数分别更新。

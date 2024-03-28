@@ -128,16 +128,16 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     Self-attention层是注意力机制的一种应用，其具体的计算过程如\cref{algorithm:Self_attention}。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
     该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。
     
-\begin{algorithm}[H]
+\begin{algorithmthm}[H]
     
     \caption{Self Attention Layer}
     \begin{algorithmic}[1]
-        \State \textbf{Input:} 输入向量 $\boldsymbol{X}$
-        \State 初始化权重矩阵 $W_Q$, $W_K$, $W_V$
-        \State 计算Q、K、V $Q = XW_Q, \quad K = XW_K, \quad V = XW_V$
-        \State 计算Attention  $A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \quad $ $d_k$ 为Q和K的维度 
-        \State 计算加权后的结果 $Z = AV$
-        \State 对Z进行线性变换，获得Self-Attention最终的输出  $\text{Self-Attention}(X) = ZW_O$
+        \State \textbf{Input:} 输入向量 $\boldsymbol{X}$代表网络中的隐变量。
+        \State 初始化权重矩阵：$W_Q$, $W_K$, $W_V$
+        \State 计算Q、K、V：$Q = XW_Q, \quad K = XW_K, \quad V = XW_V$
+        \State 计算Attention：$A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \quad $ $d_k$ 为Q和K的维度 
+        \State 计算加权后的结果：$Z = AV$
+        \State 对Z进行线性变换，获得Self-Attention最终的输出 ：$\text{Self-Attention}(X) = ZW_O$
         \State \textbf{Output:} $\text{Self-Attention}(X)$
     \end{algorithmic}
     \label{algorithm:Self_attention}
@@ -146,7 +146,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     具体而言， 由于EIT图像重建任务中，其电导率分布按照扰动目标的存在与否通常可被分为两个部分：背景帧溶液和扰动目标部分。
     其中，背景帧部分通常模拟电导率分布相对固定的电解质溶液，用于代表脑脊液的区域。这部分通常对于EIT成像结果影响较小（即应该降低该部分对于EIT图像重建结果的影响），因此需要降低模型对于该部分的关注度。
     而扰动目标区域则用于模拟特定的病灶区域（由于这些区域的含水量与背景帧不同而导致的电导率变化）。这部分通常对于EIT成像结果影响显著（即扩大该部分数据对于EIT重建结果的影响）。
-    而Self Attention机制通过计算一组数据内部的相关性并对每个元素重新赋上加权和，可以有效的关注其输入数据的特定部分。因此在此处引入Self attention层将一定程度上提高扰动目标区域对电压分布或电导率分布中相关部分的关注程度，
+    而Self Attention机制通过计算一组数据内部的相关性并对每个元素重新赋上加权和，可以有效的关注其输入数据的特定部分。因此在此处引入Self Attention层将一定程度上提高扰动目标区域对电压分布或电导率分布中相关部分的关注程度，
     进而可以有效地提高网络对EIT非线性映射的拟合能力。
 
 
@@ -169,7 +169,7 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     7 & Linear \\
     8 & QuickGELU \\
     10 & RBFNN \\
-    9 & Linear  + residue 2\\ 
+    11 & Linear  + residue 2\\ 
     \bottomrule
     \end{tblr}
 \end{table}
@@ -190,12 +190,160 @@ VVAE用于编码边界电压分布，因此要求此编码器能实现对电压�
     \caption{利用扩散概率模型实现EIT图像重建}
     \label{figure:ddpm_EIT}
 \end{figure}
+
 其中，通过不断添加高斯噪声使得电导率分布映射到到各向同性的高斯分布的过程称为扩散过程。在该过程中，初始经过编码后的电导率分布将随着时间逐渐扩散，并且不断接近高斯分布。
-而将高斯分布通过加权的方式去噪声的过程通常称为逆扩散过程，
-模型结构如
+而将高斯分布通过加权的方式去噪声的过程通常称为逆扩散过程。模型结构如\cref{figure:DDPMreconstruction}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.9\textwidth]{DDPMreconstruction.PNG}
+    \caption{图像重建块模型结构}
+    \label{figure:DDPMreconstruction}
+\end{figure}
+
 其中，Sampler 为用于采样 $t$时刻加噪声后的数据$x_t$，即Diffusion model的正向扩散过程；
 Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要根据输入的当前时间$t$、引导图像生成的条件向量（本文中为测量的边界电压分布）$v$以及当前时刻生成结果$x_t$，
-来预测$t-1$时刻需要减掉的噪声，进一步计算出$x_{t-1}$步的生成结果。
+来预测$t-1$时刻需要减掉的噪声，进一步计算出$x_{t-1}$步的生成结果。不断循环预测的过程，即可回复原始数据$x_0$。
+
+\subsubsection{图像重建块实现}{Implementation of Image Reconstruction Block}
+图像重建块在推理阶段时，首先随机生成一个大小为$32\times 32$的高斯噪声（与电导率分布编码后的大小相同）作为$t$时刻的隐变量$x_t$，
+然后通过向训练好的生成噪声网络$\epsilon_\theta$输入该时刻的隐变量$x_t$、当前时刻$t$以及经过上一节中电压编码器VEncoder编码后的电压向量$v$，
+输入上一时刻的隐变量$x_{t-1}$，经过不断迭代最终输出该电压分布作为边界条件所对应的电导率分布的编码后的结果。其算法流程如\cref{algorithm:ForwardDiffusion}
+
+\begin{algorithmthm}[H]
+    
+    \caption{Self Attention Layer}
+    \begin{algorithmic}[1]
+        \State \textbf{Input:} 输入向量 $\boldsymbol{X}$代表网络中的隐变量。
+        \State 初始化权重矩阵：$W_Q$, $W_K$, $W_V$
+        \State 计算Q、K、V：$Q = XW_Q, \quad K = XW_K, \quad V = XW_V$
+        \State 计算Attention：$A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \quad $ $d_k$ 为Q和K的维度 
+        \State 计算加权后的结果：$Z = AV$
+        \State 对Z进行线性变换，获得Self-Attention最终的输出 ：$\text{Self-Attention}(X) = ZW_O$
+        \State \textbf{Output:} $\text{Self-Attention}(X)$
+    \end{algorithmic}
+    \label{algorithm:Self_attention}
+\end{algorithm}
+
+
+扩散模型中最主要的结构即是用于生成噪声的网络$\epsilon_\theta$，本文将采用改良后的U-net作为生成噪声的网络，
+U-net是由Olaf Ronneberger等人于2015年提出的基于CNN的深度学习模型\cite{2015U}，该网络在医学图像分割领域取得了优异的表现，
+此后该网络被广泛应用在各个领域，包括DDPM的去噪网络中\cite{DDPM}，该网络是一个典型的编码器-解码器结构，由一个编码器和一个解码器组成，
+其中，编码器将输入信号映射到隐空间中，解码器对隐空间中的数据进行解码，进而获得想要的结果。
+
+然而，由于原始DDPM中的去噪网络的输入仅为隐变量$x_t$以及时刻$t$，EIT问题中电导率分布的生成却需要施加一定的边界条件（即电压-电流信号），
+因此适用于EIT图像重建算法的U-net加噪声网络还需要利用边界条件引导噪声的生成，即在网络的输入层添加电压信号的输入。交叉注意力机制（Cross Attention） 作为一种
+注意力机制最常见的变体之一，其利用计算相关性并利用相关性计算加权和的方式，有效地捕捉输入序列之间的相关性，从而很擅长处理如机器翻译等序列到序列的任务。
+故本将采用Cross-Attention机制将电压信号嵌入到输入到U-net中，具体而言，通过多个交叉注意力块（cross Attention block） 多次将电压信号引入到整个网络对电导率分布的拟合过程中。
+
+本节将首先介绍如何利用Cross-Attention机制将电压分布嵌入到网络的输入中，然后再阐述本文所实现的生成式EIT图像重建算法中生成噪声的网络的架构以及整个图像重建块的架构。
+
+\subsubsection{交叉注意力机制层}{Cross Attention Layer}
+
+本算法所使用到的U-net 中包含了一个Cross Attention layer，其具体结构如\cref{table:CrossAttention}所示。
+
+\begin{table}[H]
+    \centering
+    \caption{cross-Attention block}
+    \label{table:CrossAttention}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    层数 & 网络类型（作用目标） \\
+    \midrule
+    1 & residuelong = x \\
+    2 & GroupNorm(x) \\
+    3 & Conv2d(x) \\
+    4 & residue2 = x\\
+    5 & LayerNorm(x) \\
+    6 & SelfAttention(x) \\
+    7 & x + residue2 \\
+    8 & residue3 = x\\
+    9 & LayerNorm(x)\\
+    10 & CrossAttention(x, v)\\
+    11 & x + residue3\\
+    12 & residue4 = x\\
+    13 & LayerNorm(x) \\
+    14 & GeLU(x) \\
+    15 & x + residue4 + residuelong\\
+    \bottomrule
+    \end{tblr}
+\end{table}
+
+其中，residue1，residue2，residue3分别为短期的残差连接，residuelong最长的残差连接，用于防止梯度消失，提高网络性能。
+Conv2d是卷积核大小为$3\times 3$的卷积层， GroupNorm 和LayerNorm分别是组归一化和层归一化层， SelfAttention层为自注意力块，计算方式见\cref{algorithm:Self_attention}。
+GeLu为激活函数，用使网络具有非线性成分。
+
+CrossAttention层则利用Cross Attention机制将电压信号嵌入网络的数据流中，其具体实现方式如下：
+
+\begin{algorithm}[H]
+    
+    \caption{Cross Attention Layer}
+    \begin{algorithmic}[1]
+        \State \textbf{Input:} 输入代表电压分布的向量 $\boldsymbol{y}$\\
+        以及代表电导率分布的向量（在网络中应为隐变量） $\boldsymbol{X}$。
+        \State 初始化权重矩阵 $W_Q$, $W_K$, $W_V$
+        \State 计算Q、K、V：$Q = XW_Q, \quad K = yW_K, \quad V = yW_V$
+        \State 计算Attention  $A = \text{softmax}\left(\frac{QK^T}{\sqrt{d_k}}\right) \quad $ $d_k$ 为Q和K的维度 
+        \State 计算加权后的结果 $Z = AV$
+        \State 对Z进行线性变换，获得Cross-Attention最终的输出  $\text{Self-Attention}(X) = ZW_O$
+        \State \textbf{Output:} $\text{Cross-Attention}(X, y)$
+    \end{algorithmic}
+    \label{algorithm:Self_attention}
+\end{algorithm}
+
+其中，与Self-Attention不同的是，Cross-Attention利用电压经线性映射得到矩阵$V, K$，利用电导率分布的隐变量经过线性变换得到矩阵$Q$，
+从而利用求出$K$和$Q$的相关性矩阵，进一步与电压分布引导的矩阵V（value）计算出带权和，将电压分布由带权和的方式嵌入代表电导率分布的隐变量中。
+值得一提的是，由于电导率分布为2维矩阵，而电压分布为1维向量，故在进行Cross-Attention之前首先将电压分布按照元素从左到右从上到下的顺序映射为1维向量，
+然后再将其输入CrossAttentionBlock。
+
+
+\subsubsection{生成噪声网络的架构}{Architecture of Noise Generation Network}
+
+利用上述CrossAttentionLayer，即可高效地将电压数据嵌入生成噪声的网络中，该网络同样采用U-net作为基本架构，如\cref{figure:Unet}所示。
+
+\begin{figure}
+    \centering
+    \includegraphics[width=0.8\textwidth]{Unet.png}
+    \caption{U-net网络架构}
+    \label{figure:Unet}
+\end{figure}
+
+其中，除了CrossAttention层以外，该网络还包含多个ResidualBlock，如图中的Conv3$\times$3, SiLU, TimeEmbedding所示。
+该模块不仅包上一层的输出$x$，还包含了时刻信息$t$，且同样利用了残差连接的方式，其具体的结构如\cref{table:Unet}所示。
+
+\begin{table}[H]
+    \centering
+    \caption{Unet中ResidualBlock的结构}
+    \label{table:Unet}
+    \begin{tblr}{
+        colspec = {X[c] X[c]},
+        }
+        \toprule
+        层数 & 网络类型（作用对象） & \\
+        \midrule
+        1 & residue = residue(x) \\
+        2 & x = GroupNorm(x) \\
+        3 & x = SiLU(x) \\
+        4 & x = conv2d(x) \\
+        5 & t = SiLU(t) \\
+        6 & t = Linear(t) \\
+        7 & merge = x + t \\
+        8 & merge = GroupNorm(merge) \\
+        9 & merge = SiLU(merge) \\
+        10 & merge = Conv2d(merge) \\
+        11 & merge = merge + residue \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+
+其中，输入的时刻信息$t$为 原始时刻$t_{ori}, t \in \mathbb{R}^1$ 经过TimeEmbedding层线性变换后的代表时刻信息的向量 $t, t\in \mathbb{R}^1024$。
+经过此变换可以使得时刻信息按照正确的维度添加到网络的隐变量中。TimeEmbedding为一个可学习参数的线性全连接的神经网络（不包含激活函数），用于对时刻作线性变换。
+该模块中的其他部分均与上文中的意义相同。
+
+
+
 
 
 \xsubsection{图像后处理块}{Postprocessing Block of the Image}
@@ -225,6 +373,9 @@ Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要
         \bottomrule
     \end{tblr}
 \end{table}
+
+
+
 
 
 \xsection{径向基函数神经网络}{Radial Basis Function Neural Network}
@@ -299,7 +450,9 @@ RBF 网络具有与 MLP 类似的输入层和输出层。
         \bottomrule
     \end{tblr}
 \end{table}
-通过相对误差和重建结果可分析得出，带有RBFNN的重建结果相较于不带RBFNN的重建结果有显著提升，因此认为RBFNN对于EIT电压-电导率映射的拟合有显著作用。
+
+通过相对误差和重建结果可分析得出，带有RBFNN的重建结果相较于不带RBFNN的重建结果有显著提升，
+因此认为RBFNN对于EIT电压-电导率映射的拟合有显著作用。
 此外，adam优化器对EIT重建结果具有显著的提升。
 
 
