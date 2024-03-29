@@ -733,21 +733,25 @@ CDecoder的作用是将编码后的电导率分布尽最大可能还原成原始
     \item 经过编码后的电导率信号和经过编码后的电压信号具有更强的相关性，同时经过编码后的电导率信号与原始的电导率同样具有较高的相关性，这表明编码器不但提高了电压-电导率之间的相关性，还不会破坏其与原始数据之间的关联。
 \end{enumerate}
 
-更进一步，由于编码后的电压分布与电导率分布具有相同的特征数目，故可将编码后的电压信号利用其每个维度特征的值可视化，如\cref{figure:encodedV}所示。
+更进一步，由于编码后的电压分布与电导率分布具有相同的特征数目，故可将编码后的电压信号利用其每个维度特征的值可视化，如\cref{figure:encodedV1}，\cref{figure:encodedV1}所示。
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{encoding_1.png}
-    \caption{编码后的电导率和真实电导率对比}
-    \label{figure:EncodedV}
+    \includegraphics[width=1\textwidth]{EncodedV1.png}
+    \caption{编码后的电压和真实电导率对比（大目标）}
+    \label{figure:EncodedV1}
 \end{figure}
-
-如\cref{figure:encoding_1}所示。
-
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{encoding_1.png}
-    \caption{编码后的电导率和真实电导率对比}
-    \label{figure:encoding_1}
+    \includegraphics[width=1\textwidth]{EncodedV2.png}
+    \caption{编码后的电压和真实电导率对比（小目标）}
+    \label{figure:EncodedV2}
 \end{figure}
+
+其中，每组图像中，左侧为编码后的电压可视化后的结果，右侧为电导率分布的实际结果，可以看出，该编码器一定程度上让电压信号映射到了与电导率分布特征相关的隐空间中，
+这种变换对于成像目标较大的电导率向量更敏感，而对于成像目标较小的数据效果不佳。
+
+
+
+
