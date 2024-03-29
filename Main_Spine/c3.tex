@@ -628,7 +628,7 @@ NoiseG的训练过程如\cref{algorithm:TrainDDPM}所示，
     \label{figure:DDPMLoss}
 \end{figure}
 
-\subsubsection{CDecoder魔性训练}
+\subsubsection{CDecoder模型训练}
 
 CDecoder的作用是将编码后的电导率分布尽最大可能还原成原始的电导率分布，故该模型利用CEncoder生成的编码后的电导率分布以及原始的电导率分布作为数据集进行训练。
 通过向网络中输入编码后的电导率分布数据，最小化网络输出$\text{CDecoder}(\mbs{c_e})$与原始的电导率分布$\mbs{c}$之间的均方误差，如\cref{equation:CDecodertrain}。
@@ -638,10 +638,111 @@ CDecoder的作用是将编码后的电导率分布尽最大可能还原成原始
     \min \|\text{CDecoder}(\mbs{c_e}) - \mbs{c}\|_2
 \end{equation}
 
-\xsection{模型性能的评估和优化}{Evaluation and Optimization of Model Performance}
+该网络的训练集-测试集loss如\cref{figure:DecoderLoss}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{DecoderLoss.png}
+    \caption{CDecoder训练-测试Loss曲线}
+    \label{figure:DecoderLoss}
+\end{figure} 
+
+\xsection{模型性能的评估与重建结果分析}{Evaluation of Model Performance and Analysis of Reconstruction Results}
+
+本节将首先介绍EIT图像重建算法常见的评价指标，并利用该指标对上一节中训练好的网络的重见效果进行评估。
+此外，本节还通过编码器的输入指出了该编码器-解码器结构对于模型重建效果的提升。
+
+\xsubsection{评价指标}{Evaluation Metrics}
+\subsubsection{相对误差(Relative Error, RE)}
+
+图像重建的相对误差(RE)是指重建的电导率分布$\mbs{\hat{\sigma}}$与真实电导率$\mbs{\sigma}$之间的误差，是衡量重建图像质量的直观指标，如\cref{equation:RE}。
+
+\begin{equation}
+    \label{equation:RE}
+    RE = \frac{\| \mbs{\hat{\sigma}} - \mbs{\sigma}\|_2}{\|\mbs{\sigma}\|_2}
+\end{equation}
+
+\subsubsection{相关系数(Coorelation Coefficient, CC)}
+
+相关系数(CC)衡量重构电导率分布$\mbs{\hat{\sigma}}$与实际电导率$\mbs{\sigma}$之间的相似度，如\label{equation:CC}所示。
+
+\begin{equation}
+    \label{equation:CC}
+    CC = \frac{\sum_{i=1}^{N} \left(\hat{\sigma_i} - \bar{\hat{\sigma}}\right)\left(\sigma_i-\bar{\sigma}\right)}{\sqrt{\sum_{i=1}^{N} \left(\hat{\sigma_i} - \bar{\hat{\sigma}}\right)^2 \sum_{i=1}^{n} \left(\sigma_i-\bar{\sigma}\right)^2}}
+\end{equation}
+
+\xsubsection{模型评估}{Model Evaluation}
+
+根据上述评价指标对本文所提出的模型进行评估，如\cref{table:Evaluation}。
+
+\begin{table}
+  
+    
+    \caption{根据RE和CC评估网络模型}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    算法类型 & CC & RE($\times 10^{-5}$) \\
+    \midrule
+    EC-Diffusion & 0.9780 & 2.1073 \\
+    CNN+RBFNN(Adam) & 0.9665 & 4.7563 \\
+    CNN(Adam) & 0.3775 & 13.7632 \\
+    \bottomrule
+    \end{tblr}
+    \label{table:Evaluation}
+\end{table}
+
+其中，EC-Diffusion为本文所提出的生成式EIT图像重建算法，CNN+RBFNN(Adam)和CNN(Adam)为\cite{RBFEIT}所提出的重建算法，
+这里均已选择每种模型可能的最优参数来做比较。
+可以看出，本文所提出的EC-Diffusion图像重建算法各项指标均高于其他算法。
+
+\cref{figure:reconsresult}是从测试集中选出的4组重建结果，其中第一列是原始的电导率分布图像，第二列是利用CNN重建后的结果，第三列则是本文所提出的EC-Diffusion重建算法所得到的结果。
+可以看出，该算法在对图像背景电导率以及边缘电导率的重建效果均明显优于利用CNN重建的图像。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{reconsresult.jpg}
+    \caption{重建结果}
+    \label{figure:reconsresult}
+\end{figure}
+
+此外，本文还对CEncoder和VEncoder的性能进行了评估和分析。首先评估了该EIT重建任务中各个信号之间的相关性，如\cref{table:CoorSig}
+
+\begin{table}
+  
+    
+    \caption{EIT信号之间的相关性分析}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    信号类型1 & 信号类型2 & 平均相关系数 \\
+    \midrule
+    原始的电压分布 & 原始的电导率分布 & 0.0049 \\
+    编码后的电压分布 & 电导率分布 &  0.2724\\
+    编码后的电压分布 & 编码后的电导率分布 & 0.5285 \\
+    原始的电导率分布 & 编码后的电导率分布 & 0.5389 \\
+    \bottomrule
+    \end{tblr}
+    \label{table:CoorSig}
+\end{table}
+
+可以看出，
+\begin{enumerate}
+    \item 编码前的电压和电导率之间相关性极低（由于电压信号与电导率信号的维度不同，故采取给电压向量结尾补0的方式让其与电导率分布长度相同，这种做法有可能会导致其相关性降低，不过在此处是唯一可行的比较方式）。
+    \item 经过编码后的电压信号与原始的电导率分布之间的相关性有明显提高，这将更有利于最终的图像重建任务。
+    \item 经过编码后的电导率信号和经过编码后的电压信号具有更强的相关性，同时经过编码后的电导率信号与原始的电导率同样具有较高的相关性，这表明编码器不但提高了电压-电导率之间的相关性，还不会破坏其与原始数据之间的关联。
+\end{enumerate}
+
+更进一步，由于编码后的电压分布与电导率分布具有相同的特征数目，故可将编码后的电压信号利用其每个维度特征的值可视化，如\cref{figure:encodedV}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{encoding_1.png}
+    \caption{编码后的电导率和真实电导率对比}
+    \label{figure:EncodedV}
+\end{figure}
 
 如\cref{figure:encoding_1}所示。
-
 
 
 \begin{figure}[h]
