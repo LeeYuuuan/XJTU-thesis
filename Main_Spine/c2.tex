@@ -2,13 +2,13 @@
 
 \xchapter{生成式EIT图像重建算法理论基础}{Theory of Generative EIT Reconstruction Algorithm}
 
-EIT 技术是一种根据场域内部电导率分布情况获取场域内部信息的成像技术。该技术由
+EIT技术是一种根据场域边界电压信息重构场域内电导率分布信息的成像技术。该技术由
 于其非侵入、无损伤等优势，近年来得到了广泛的应用。然而，EIT 图像重建算法由于其固
 有的不足而限制的其使用场景。因此，如何提高重建图像的分辨率，并加快重建的速度，是
 目前 EIT 技术的瓶颈。
 
 近年来，深度学习技术，尤其是生成式模型，取得了突破性的成果，这也为提高 EIT 图
-像重建质量提供了新的研究方向。不同与计算机视觉领域的其他图像生成任务（如利用文本
+像重建质量提供了新的研究方向。不同于计算机视觉领域的其他图像生成任务（如利用文本
 生成图像、图像分类、图像识别等），EIT 技术具有完备的数学物理模型，这就为基于深度学
 习的 EIT 图像重建模型提供了大量的仿真数据支持。然而，由于其性能直接影响了临床医生
 对于病情的判断，因此 EIT 图像重建算法的广泛应用需要确保其效率及可行性。
@@ -44,18 +44,22 @@ EIT 图像重建算法提供理论基础。
   h(\boldsymbol{m}) - \boldsymbol{d} = 0
 \end{equation}
 
-特别的，对于EIT而言，其成像目标是待测场内部的电导率分布。该技术通过向未知场内注入电流，同时测
+EIT技术通过向未知场内注入电流，同时测
 量其边界电压分布，利用麦克斯韦方程组求解出其场域内部的电导率（或阻抗，注：由于电
 导率和电阻抗之间为倒数关系，可相互转换。虽 EIT 名为电阻抗断层成像，但在实际 EIT 的
 研究中，通常利用电导率分布作为重建图像的直接依据，故如无特殊说明，本文的成像目标
-均为电导率）分布，最后根据其内部的电导率分布重建出图像。
-EIT 问题的研究可分为 EIT 正问题和 EIT 逆问题。EIT 正
-问题是指已知待测场内部的电导率分布及其边界电流驱动信号，求解其内部或边界的电压或
-电流分布。EIT 逆问题则是指已知场域边界的测量电压以及驱动信号，求解场域内部的电导
-率分布情况。
-\xsubsection{EIT正问题}{Forward Problem of EIT}
-EIT 问题属于电磁场分析问题，其电导率分布、注入电流以及测量电压之间可根据麦克斯
+均为电导率）分布，最后根据其内部的电导率分布重建出图像（如\cref{figure:eeeee}）。
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.5\textwidth]{eeeee.png}
+  \caption{待测场图示}
+  \label{figure:eeeee}
+\end{figure}
+
+EIT问题属于电磁场分析问题，其电导率分布、注入电流以及测量电压之间可根据麦克斯
 韦(Maxwell)方程组
+
 \begin{equation}
 \label{equation:Maxwell}
     \begin{aligned}
@@ -80,14 +84,15 @@ EIT 问题属于电磁场分析问题，其电导率分布、注入电流以及�
 式中，$\varepsilon$是介电常数，$\mu$是介质的磁导率，$\sigma$是电导率。
 
 为简化 EIT 问题的求解步骤，通常作以下假设：
-\begin{enumerate}
-  \item EIT 敏感场可被看作是似稳场。即 EIT 场域内部任意一点的电流在激励信号的作用下同
+
+1）EIT 敏感场可被看作是似稳场。即 EIT 场域内部任意一点的电流在激励信号的作用下同
   时产生相应的变化。也就是说可以忽其场域内介电常数和位移电流的影响。
-  \item EIT 场域内部不存在其他与外部激励信号频率相同的电流源。即场域内部不存在涡流效
+
+2）EIT 场域内部不存在其他与外部激励信号频率相同的电流源。即场域内部不存在涡流效
   应，任意位置电流密度的散度为 0。
-  \item 假设激励电流仅流经单排电极所在的平面。即研究二维 EIT 问题，以降低问题的复杂性，
+
+3）假设激励电流仅流经单排电极所在的平面。即研究二维 EIT 问题，以降低问题的复杂性，
   提高计算效率。
-\end{enumerate}
 根据以上假设，EIT 模型还满足：
 \begin{equation}
   \label{equation:Maxwell_hp}
@@ -105,6 +110,36 @@ EIT 问题属于电磁场分析问题，其电导率分布、注入电流以及�
 \end{equation}
 上式即为EIT敏感场的数学模型。
 
+由此EIT模型可被描述为：
+对于连续的已知平面$\Omega$上的EIT模型，其电压分布$u(x,y)$满足如下方程和边界条件：
+\begin{equation}
+  \begin{aligned}
+  &\nabla \cdot (\sigma \nabla \phi) = 0, &(x, y)\in {\Omega} \\
+  &\sigma\frac{\partial{u}}{\partial{v}} = \psi, &(x,y) \in {\partial{\Omega}} \\
+  &\phi = \varphi, &(x,y)\in\partial{\Omega} \\
+\end{aligned}
+\end{equation}
+其中，其内部电导率分布$\sigma(x,y) > 0$ ，边界电流密度$\psi(x,y)$，边界电压$\phi(x,y)$，边界电压$\varphi(x,y)$均是关于场域内部任意一点($x,y)$的函数。
+
+EIT问题包含EIT正问题和EIT逆问题，EIT正问题为：
+若给定$\sigma(x,y)$和$\psi(x,y)$，则可由方程组确定出$u(x,y)$，即诺伊曼边界值问题。
+若给定$\sigma(x,y)$和$\rho(x,y)$，求解$u(x,y)$，则为迪利克雷边界值问题。
+
+而实际EIT问题需要求解逆问题，即已知边界电压$\rho$和电流$\psi$求解电导率分布$\sigma(x,y)$。
+电导率分布$\sigma(x,y)$确定了从可能的电流密度集合$\Psi$到和电压分布集合$\Phi$的映射。
+\begin{equation}
+  F_\sigma: \psi(x,y) \rightarrow \phi(x,y)
+\end{equation}
+EIT逆问题即是在已知 $F_{\sigma} = F_0$的条件下求解 $\sigma(x,y)$，使得
+\begin{equation}
+  F_{\sigma}(\psi) = F_{0}(\psi),  \forall \psi \in \Psi
+\end{equation}
+
+
+\xsubsection{EIT正问题}{Forward Problem of EIT}
+
+EIT 正问题是指已知待测场内部的电导率分布及其边界电流驱动信号，求解其内部或边界的电压或
+电流分布。
 在实际求解中，通常求解出其解析解（精确解）非常困难，因此通常使用基于有限元的迭代方法求解出其近似解，EIT有限元模型如\cref{figure:FEMa}所示
 \begin{figure}[h]
 \centering
@@ -144,7 +179,6 @@ $\Phi_1$,$\Phi_2$,$\Phi_3$。用向量表示为:
   \caption{三角形单元}
   \label{figure:fem}
 \end{figure}
-
 令三角形单元内部的电位分布为：
 \begin{equation}
   \Phi(x,y) = \alpha + \beta x + \gamma y 
@@ -222,28 +256,8 @@ $\Delta = b_1c_2 - b_2c_1$为三角形的面积。
 其对于边界形状任意变化的待测场也适用。也正是EIT正问题完备的仿真模型给利用深度学习模型实现EIT图像重建算法提供了数据基础。
 
 \xsubsection{EIT逆问题}{Inverse Problem of EIT}
-对于连续的已知平面$\Omega$上的EIT模型，其电压分布$u(x,y)$满足如下方程和边界条件：
-\begin{equation}
-  \begin{aligned}
-  &\nabla \cdot (\sigma \nabla \phi) = 0, &(x, y)\in {\Omega} \\
-  &\sigma\frac{\partial{u}}{\partial{v}} = \psi, &(x,y) \in {\partial{\Omega}} \\
-  &\phi = \varphi, &(x,y)\in\partial{\Omega} \\
-\end{aligned}
-\end{equation}
-其中，其内部电导率分布$\sigma(x,y) > 0$ ，边界电流密度$\psi(x,y)$，边界电压$\phi(x,y)$，边界电压$\varphi(x,y)$均是关于场域内部任意一点($x,y)$的函数。
-若给定$\sigma(x,y)$和$\psi(x,y)$，则可由方程组确定出$u(x,y)$，即诺伊曼边界值问题。
-若给定$\sigma(x,y)$和$\rho(x,y)$，求解$u(x,y)$，则为迪利克雷边界值问题。
-上述两个问题称为EIT正问题。而实际EIT问题需要求解逆问题，即已知边界电压$\rho$和电流$\psi$求解电导率分布$\sigma(x,y)$。
-
-电导率分布$\sigma(x,y)$确定了从可能的电流密度集合$\Psi$到和电压分布集合$\Phi$的映射。
-\begin{equation}
-  F_\sigma: \psi(x,y) \rightarrow \phi(x,y)
-\end{equation}
-EIT逆问题即是在已知 $F_{\sigma} = F_0$的条件下求解 $\sigma(x,y)$，使得
-\begin{equation}
-  F_{\sigma}(\psi) = F_{0}(\psi),  \forall \psi \in \Psi
-\end{equation}
-EIT逆问题在理论上存在唯一解已被先前的研究证实\cite{Sun1993An}。其条件则是已知$\rho(x,y),\quad x \in \partial \Omega$。
+EIT 逆问题是指已知场域边界的测量电压以及驱动信号，求解场域内部的电导
+率分布情况，其在理论上存在唯一解已被先前的研究证实\cite{Sun1993An}。其条件则是已知$\rho(x,y),\quad x \in \partial \Omega$。
 然而对于实际的工程问题而言，对于一个未知场，其可获得的边界电压值是有限的，即电极的个数限制了测量数据的维度。
 这就导致EIT逆问题的严重病态性以及非适定性，进而影响了重建分辨率。
 EIT逆问题的求解往往通过迭代的思想，根据每一步正问题求解后边界电压与真实测量结果的误差不断修正系统参数。
@@ -252,14 +266,14 @@ EIT逆问题的求解往往通过迭代的思想，根据每一步正问题求�
 \xsection{深度学习相关理论}{Theory of Deep Learning}
 近年来深度学习技术发展迅速，各种架构层出不穷，而本文所提出的EIT图像重建算法以深度学习模型为基础，因此本章将重点介绍该算法中所用到的深度学习技术的原理和架构。
 \xsubsection{全连接神经网络}{Fully Connected Neural Networks}
-全连接神经网络(fully connected network, FCN)，也被称为人工神经元网络（Artificial Neural Network，ANN）,多层感知机(multilayer Perceptron，MLP)。
+全连接神经网络(Fully Connected Neural Networks, FCN)，也被称为人工神经元网络（Artificial Neural Network，ANN）,多层感知机(Multilayer Perceptron，MLP)。
 该思想源于仿生学，其中树突对应MLP的输入层，轴突和轴突未梢对应其隐藏层和输出层。
 FCN是深度学习模型中最基础的结构。一个三层的MLP包含了其模型如\cref{figure:FCN}所示，每层神经元本质上代表一组权重矩阵，用来对输入层的数据作线性变换，进而输出至下一层。
 通常，输出层的数据会通过一个激活函数后输出最终结果。每层神经元的输出是下一层所有神经元的输入，故名“全连接”。
 全连接网络有对非线性映射强大的拟合能力，故可以用来学习各种非线性映射。然而，随着神经网络层数的增加，其训练和推理过程由于网络参数规模庞大而往往更加耗时。
 同时，全连接网络的输入通常为向量，因此会忽略掉二维或高维数据的维度特征。因此，当前主流的深度学习模型通常不以FCN作为主要模型架构，取而代之的是卷积神经网络等，以更好地适应复杂的任务和高维的数据。
 FCN更多地是用作一个模型的一小部分。
-\begin{figure}
+\begin{figure}[H]
   \usetikzlibrary{positioning}
   
 
@@ -297,7 +311,7 @@ FCN更多地是用作一个模型的一小部分。
 
 \xsubsection{卷积神经网络}{Convolutional Neural Networks}
 卷积神经网络(Convolutional Neural Networks, CNN)是目前使用范围最广的深度学习模型之一，由其对高维度数据特征提取的能力优异表现而广泛应用于图像处理和计算机视觉任务中。
-一般的CNN通常包含卷积层，池化层，全连接层。其常见的模型结构如所示。\cref{figure:CNN}
+一般的CNN通常包含卷积层，池化层，全连接层。其常见的模型结构如\cref{figure:CNN}所示。
 
 \begin{figure}[h]
   \centering
@@ -306,7 +320,7 @@ FCN更多地是用作一个模型的一小部分。
 \label{figure:CNN}
 \end{figure}
 
-卷积层通常利用卷积操作提取图像（或其他输入数据）的空间特征信息。CNN每一层通常具有多个通道（包含多个卷积核），每个卷积和分别与图像进行卷积运算，其的结果将会作为下一层的输入；不同的卷积核可以提取到图像不同类型的空间特征，因此CNN通常相较于FCN有更强大的特征提取能力。
+卷积层通常利用卷积操作提取图像（或其他输入数据）的空间特征信息。CNN每一层通常具有多个通道（包含多个卷积核），每个卷积核分别与图像进行卷积运算，其的结果将会作为下一层的输入；不同的卷积核可以提取到图像不同类型的空间特征，因此CNN通常相较于FCN有更强大的特征提取能力。
 池化层通常用于减小图像尺寸，同时可以保留输入结果中重要的特征信息。常见的池化操作通常有平均值池化(Average Pool)、最大值池化(Max Pool)等。
 全连接层则是将CNN的输出结果进行重塑，使得输出维度符合实际需要。通常用于分类或回归预测等任务中。
 CNN的运算原理如\cref{equation:CNN}所示。
@@ -325,7 +339,7 @@ $\mathbf{b}$ 是偏置项；
 $conv(\cdot)$ 表示卷积操作。
 自Resnet提出以来\cite{2016Resnet}，残差卷积以广泛应用在各种基于卷积神经网络的模型之中其核心思想是通过残差连接来解决神经网络中的梯度消失以及梯度爆炸问题。其模型如\cref{figure:Resnet}
 通常这种结构可以使得网络直接学习残差（即残差块的输出减去输入）。本文大量采用了残差卷积块作为模型的基础模块，这种方式可以使整个网络更容易优化和训练，进一步提高网络的性能和泛化能力。
-\begin{figure}
+\begin{figure}[h]
   \centering
   \includegraphics[width=0.6\textwidth]{Resnet.png}
   \caption{残差卷积模型}
@@ -343,12 +357,11 @@ $conv(\cdot)$ 表示卷积操作。
 近年来，各式各样的激活函数不断被学者们提出，本文将重点介绍模型从采用的四种激活函数，如
 对于其他未被使用到的激活函数将不做赘述。
 
-\begin{enumerate}
 
-  \item ReLU
+\subsubsection{ReLU}
 
 ReLU是Hinton于2010年提出的激活函数\cite{2010ReLU}，其表达式如\cref{equation:ReLU}所示。
-sigmoid函数在函数值趋近于0和1的时候会变得平坦，即此时的梯度几乎为0。而由于神经网络参数更新的方式通过反向传播进行，则此时对于这类输入或输出趋于0或的节点，其权重几乎不会得到更新，此类神经元被称为饱和神经元。
+sigmoid函数在函数值趋近于0和1的时候会变得平坦，即此时的梯度几乎为0。而由于神经网络参数更新的方式通过反向传播进行，则此时对于这类输入或输出趋于0的节点，其权重几乎不会得到更新，此类神经元被称为饱和神经元。
 因此，这就会导致神经网络中许多节点的参数不再更新，即梯度消失问题。
 ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度消失问题，并且由于其中只存在线性映射，因此能大大提高网络的计算效率，进而加快梯度下降过程中的收敛速度。
 此外，该激活函数还被认为具有生物和理性，即与单侧抑制原理相符。
@@ -364,25 +377,24 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
     \right.
     \end{equation}
 
-  \item Sigmoid Linear Unit (SiLU)
+    \subsubsection{SiLU}
   
     SiLU的表达式如\cref{equation:SiLU}所示。
     其相较于ReLU而言，由于其连续可微，故在反向传播的过程中更容易优化。并且SiLU在其定义域内梯度均不为0，这非常有助于在深度神经网络中避免梯度消失的问题。
     同时，由于ReLU函数的特性，网络中输出结果小于0的神经元会被抑制（其梯度为0），故会造成网络稀疏，虽然有助于抑制过拟合，但是也会抑制网络对于数据信息的利用率，进而影响模型的性能。
-    并且由于ReLU和Sigmoid函数的输出数据分布的均值均不为零，因此会给给后一层的神经网络引入偏置偏移，进而可能会影响梯度下降的效率。
+    并且由于ReLU和Sigmoid函数的输出数据分布的均值均不为零，因此会给后一层的神经网络引入偏置偏移，进而可能会影响梯度下降的效率。
     而，SiLU的输出范围在$[0, 1]$之间，因此可以为后续的模块保留一定的动态范围，从而有助于更好地处理数据分布的变化。
 
     \begin{equation}
       \label{equation:SiLU}
       \text{SiLU}(x) = x \cdot \sigma(x)
     \end{equation}
-  
-    其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
+  其中，$\sigma(x)$ 是 Sigmoid 函数，定义为：
   \begin{equation}
     \sigma(x) = \frac{1}{1 + e^{-x}}
   \end{equation}
   
-  \item Gaussian Error Linear Units function (GeLU)
+  \subsubsection{Gaussian Error Linear Units function (GeLU)}
   
   GeLU是2016年 Hendrycks等人提出的激活函数\cite{2016GeLU}。但直到其在Transformer和Bert模型中得到应用之后，才广泛进入人们的视野。
   该函数的表达式如\cref{equation:GeLU}。
@@ -401,20 +413,10 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
     \Phi(x) = \frac{1}{2} \left(1 + \text{erf} \left(\frac{x}{\sqrt{2}}\right)\right)
   \end{equation}
   
-  特别注意的是，在实现的过程中可以用如\cref{equation:quickGeLU}所示的函数对GeLU作近似估计：
-  \begin{equation}
-    \label{equation:quickGeLU}
-    \text{quickGELU}(x) = \frac{1}{2}x\left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}\left(x + 0.044715x^3\right)\right)\right)
-  \end{equation}
-  其中，
-  \begin{equation}
-    tanh(x) = \frac{{e^{x} - e^{-x}}}{{e^{x} + e^{-x}}}
-\
-  \end{equation}
 
-  \item Softmax
+  \subsubsection{Softmax}
 
-  Softmax函数不同于其他激活函数，其作用是将连续的输出信号映射到离散的空间中，故经常用作分类网络的输出层，其表计算方式如\cref{equation:softmax}所示。
+  Softmax函数不同于其他激活函数，其作用是将连续的输出信号映射到离散的空间中，故经常用作分类网络的输出层，其计算方式如\cref{equation:softmax}所示。
   Softmax计算该层每个神经元的输出对所有神经元输出的和的比值。即此过程将每个神经元的输出映射到了$[0,1]$中，并且输出层
   所有的神经元之和为1。这样做的好处则是输出层的神经元可以表示为一个概率空间，其中每个神经元的输出可以看做是某一个事件发生的概率。
   因此经常作为多分类问题的输出层使用。
@@ -426,7 +428,7 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
 
 其中，$\mathbf{z} = (z_1, z_2, ..., z_K)$ 是输入向量，$K$ 是类别的数量。softmax 函数将输入向量的每个元素 $z_i$ 转换为相应的概率值，即满足所有概率之和等于1。
 
-\end{enumerate}
+
 
 \begin{figure}[h]
   \centering
@@ -548,7 +550,7 @@ attention通常包含三个重要的部分，即：
 EIT图像重建算法的任务目标即是在给定边界条件下生成出符合原始电导率分布的图像。
 通常基于深度学习模型设计的EIT图像重建算法利用电压-电导率分布数据构件数据集，学习出电压到电导率分布的非线性映射以实现对EIT待测场中的目标信息进行成像。
 此类深度学习模型的目标是估计$p(C \mid v)$（在已有的观测数据分布上估计目标变量的概率分布），其中$C$是电导率分布的真实概率分布，$v$是测量电压构成的向量组。
-而实际情况下该很难拟合出上述复杂的概率分布模型，故深度学习模型通常有两类不同的做法，即判别式模型和生成式模型。
+而实际情况下很难拟合出上述复杂的概率分布模型，故深度学习模型通常有两类不同的做法，即判别式模型和生成式模型。
 
 判别式模型如卷积神经网络等通常通以$P(C \mid V=v)$为目标，即拟合$f(v) = p(c \mid v)$这一非线性映射。
 不同于判别式模型，生成式模型则是先估计出$p(v \mid c)$ 再通过贝叶斯公式（\cref{equation:bysf}）计算出$p(c \mid v)$。
@@ -560,7 +562,7 @@ EIT图像重建算法的任务目标即是在给定边界条件下生成出符�
 
 故生成式模型的本质是建立一个映射$X=g(Z)$，从隐变量的分布（latent variable）$Z$生成数据的真实分布。通常假设隐变量的分布为高斯分布(Gaussian Distribution)。
 生成式模型的学习目标即通过一组数据（$\mbs{X} = \{X_1, X_2, ..., X_i\}, i = 1, 2, ..., n$）学习其真实分布$p(X)$。即假设该数据集是从一个概率分布$p(x)$中采样的结果，生成式模型希望根据该采样结果（即数据集）恢复出这个概率分布。此后通过采样即可生成符合此分布的数据。
-而由恢复该分布较为困难，因此根据贝叶斯公式，在此过程中引入隐变量$Z$，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}（离散情况），\cref{equation:GenerativeModelcon}（连续情况）。
+而由于恢复该分布较为困难，因此根据贝叶斯公式，在此过程中引入隐变量$Z$，利用隐变量$Z$与原始数据的关系计算出原始数据的概率分布$p(x)$，如\cref{equation:GenerativeModel}（离散情况），\cref{equation:GenerativeModelcon}（连续情况）。
 
 \begin{equation}
   \centering
