@@ -16,21 +16,20 @@
 利用扩散模型实现EIT图像重建算法，由于扩散模型加噪声、去噪声的过程而一定程度上提高了模型抗噪声的能力，并且通过对推断过程的改进，可
 以有效减少在推理过程中的采样次数，极大程度的缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
 
-本章将重点介绍用于脑卒中快速鉴别的生成式EIT图像重建算法的模型架构。包括模型总体的结构、模型各部分的结构和作用、
+本章将重点介绍用于脑卒中快速鉴别的生成式EIT图像重建算法的设计与实现。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
 模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
 
-\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法模型架构}{Architecture of the Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
-\xsubsection{模型的总体架构}{The Overall Architecture of The Model}
-\label{section:Model}
+\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法设计}{Design of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
-EIT图像重建算法就是要利用场域边界电压-电流数据重构出其内部电导率分布的算法。而由于EIT图像重建任务中，
-不同类型的数据维度不同，同一类型的数据也包含多种表示方式，因此本节首先定性和定量描述EIT图像重建任务，随后将提出
-一个用于脑卒中快速鉴别的生成式EIT图像重建算法。
 
-\subsubsection{EIT图像重建任务描述}
+EIT图像重建算法就是要利用场域边界电压-电流数据重构出其内部电导率分布。
+但是，电流的激励方式，电压信号的维度等都会影响到EIT图像重建算法的设计，并且同一类型的数据也包含多种表示方式（如电压可表示为矩阵形式和向量形式）。
+因此本节首先定性和定量得描述EIT图像重建问题，随后将提出一个用于脑卒中快速鉴别的生成式EIT图像重建算法。
 
-设待测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
+\xsubsection{EIT图像重建问题分析}{Analysis of EIT Image Reconstruction Problem}
+
+设待如\cref{figure:xyz}所示的测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
 EIT采集系统的激励模式为邻近激励，单次测量所有激励模式所构成的集合为$S_{stim}$，单次测量电流激励的次数为$n_m$；测量电压的模式为邻近差分，单次激励测量电压的维度为$d_{vm}$。
 则单次测量的电压向量维度为$d_m = d_{vm} * n_m$。（关于EIT的有限元模型和测量模式详见\cref{PrincipleEIT}）。
 利用上述测量模式，可获得EIT测量电压分布。EIT的测量电压共包括两个部分，分别为背景帧的边界电压以及含扰动目标的边界电压。
@@ -38,10 +37,18 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 含扰动目标的边界电压分步的两种形式分别为$v_{mtx} = \{v_{ij}\}, i \in S_{stim}, j =1,2,...d_{vm}$。向量形式$v_{vector}$，
 其中$v_{ij}$表示以$i$为激励方式的第$j$次测量的结果，向量的维度为$d_m$。
 
-则EIT图像重建算法的目标为通过测量含扰动目标的边界电压$v_{vector}$以及背景帧的边界电压$v_{0vector}$重建出其场域内部的的电导率分布变化向量 $\sigma$，其维度为 $1 \times d_e$EIT重建的图像分辨率为$res_{row} \times res_{column}$。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{eeeee.png}
+    \caption{待测场图示}
+    \label{figure:xyz}
+  \end{figure}
+
+
+则EIT图像重建算法的目标为通过测量含扰动目标的边界电压以及背景帧的边界电压的差$\Delta v_{vectore} = v_{vector} - v_{0vector}$重建出其场域内部的的电导率分布变化向量 $\sigma$，其维度为 $1 \times d_e$EIT重建的图像分辨率为$res_{row} \times res_{column}$。
 
 如无特殊说明，本文所采用的参数均为\cref{table:param_stm}中的默认值。
-\begin{table}
+\begin{table}[h]
     \centering
     
     \caption{参数设置}
@@ -62,10 +69,45 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     \label{table:param_stm}
 \end{table}
 
-\subsubsection{用于脑卒中快速鉴别的生成式EIT图像重建算法总述}
+\xsubsection{用于脑卒中快速鉴别的生成式EIT图像重建算法总述}{Overall of of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
-本文提出的用于脑卒中快速鉴别的生成式EIT图像重建算法模型如\cref{figure:EITREmodel}所示，由于该算法
+根据上一节的EIT图像重建问题，本节提出了一个用于脑卒中快速鉴别的生成式EIT图像重建算法，如\cref{algorithm:GeneAlgorithm}。
+
+\begin{algorithm}[H]
+    
+    \caption{用于脑卒中快速鉴别的生成式EIT图像重建算法}
+    \begin{algorithmic}[1]
+        \State 测量未知场域不含扰动目标的边界电压$v_{0vector}$
+        \State 测量含有扰动目标时该场域的边界电压$v_{vector}$
+        \State 计算边界电压差向量$\Delta v_{vector} = v_{vector - v_{0vector}}$
+        \State 获得训练好的EC-Diffusion 模型 $\text{EC-Diffusion}(\cdot)$
+        \State \textbf{Input:} $\Delta v_{vecotr}$
+        \State \textbf{Output:} $ \text{reconsturcted conductivity}  = \text{EC-Diffusion}(\Delta v_{vecotr})$
+    \end{algorithmic}
+    \label{algorithm:GeneAlgorithm}
+\end{algorithm}
+在该算法中，获得训练好的EC-Diffusion模型共需要三个阶段实现，分别是：
+
+1）设计并实现用于EIT图像重建任务的模型。该阶段使用编码器-解码器与改进的扩散模型共同实现。由于该算法
 利用Diffusion Model通过编码后的电压分布重建出编码后的电导率分布，故将其命名为EC-Diffusion（Encoded Diffusion）。
+
+2）模型训练。这一阶段会使用仿真软件仿真出用于训练模型所需要的EIT数据，并利用这些数据训练模型至收敛。
+
+3）模型评估。将用于测试网络性能的数据输入至训练好的模型，并根据其重建出的图像以及其他参数评估模型性能并优化模型。
+
+上述阶段利用EIT数据使EIT图像重建模型学习到最优的参数，以尽可能的拟合EIT电压-电导率分布。
+当以上阶段完成后，便可利用\cref{algorithm:GeneAlgorithm}解决EIT图像重建问题。即，
+将EIT边界差分电压数据输入至训练好的模型中，经过模型正向推理即可得到其内部的电导率分布图像。
+
+
+\xsection{EC-Diffusion模型的设计与实现}{Design and Implementation of the EC-Diffusion Model}
+
+\xsubsection{模型的总体架构}{Overall of the Model Architecture}
+\label{section:Model}
+
+针对EIT图像重建问题中的非线性映射，
+本文提出了一个利用编码器-解码器以及一个基于改进扩散模型的深度生成式EIT图像重建模型：EC-Diffusion\cref{figure:EITREmodel}所示，
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=.8\textwidth]{EITREmodel.png}
@@ -79,6 +121,19 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
 2）图像重建块（Diffusion-based Reconsturction）。该部分利用改进的扩散概率模型拟合EIT图像重建映射，输出编码后的电导率分布。该模块是本算法的核心部分。
 
 3）图像后处理块（即电导率解码块，Conductivity Decoder）。用于解码图像重建块的生成结果，将生成结果映射到用于引导图像的电导率分布所适应的维度。
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \xsubsection{数据编码块}{Data Encoding Block}

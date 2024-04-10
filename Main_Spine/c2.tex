@@ -51,11 +51,32 @@ EIT技术通过向未知场内注入电流，同时测
 均为电导率）分布，最后根据其内部的电导率分布重建出图像（如\cref{figure:eeeee}）。
 
 \begin{figure}[h]
-  \centering
-  \includegraphics[width=.5\textwidth]{eeeee.png}
-  \caption{待测场图示}
   \label{figure:eeeee}
+  \centering
+
+\begin{tikzpicture}
+
+  % 画圆
+  \draw (0,0) circle (2cm);
+  
+  % 画16等分点
+  \foreach \i in {1,...,16} {
+      \draw (360/16*\i:2cm) circle (2pt);
+  }
+  
+  % 标注电极
+  \node at (360/16:2.5cm) {电极};
+  
+  % 标注注入电流箭头
+  \draw[->] (90:2.5cm) -- (90:2cm) node[above]{\quad\quad\quad\quad\quad\quad 注入电流};
+  % 标注出去的箭头
+  \draw[->] (270:2cm) -- (270:2.5cm);
+\end{tikzpicture}
+\caption{待测场图示}
+
 \end{figure}
+
+
 
 EIT问题属于电磁场分析问题，其电导率分布、注入电流以及测量电压之间可根据麦克斯
 韦(Maxwell)方程组
