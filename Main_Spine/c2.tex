@@ -470,10 +470,7 @@ ReLU在输入大于0的时候其梯度恒为1，因此可以有效避免梯度�
 
   
   通过计算一个batch中每一个通道内的所有数据的每一个特征的均值和方差，然后利用\cref{equation:norm}
-\begin{equation}
-  \label{equation:norm}
-  res = \frac{x - E\left[ x\right]}{\sqrt{Var\left[ x\right] + \epsilon}} * \gamma + \beta
-\end{equation}
+
 
 其中，$E\left[ x\right], Var\left[ x\right]$分别是上述数据的均值和方差， $\epsilon$为一趋于0的常数，确保分母大于零，
 $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
@@ -487,8 +484,6 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
   由于BN通常对batch size 的选择非常敏感，而GN通常选择固定的组数（本文大量使用到GN，其中归一化组数选择为32），
   从而使得归一化的过程不受到batch size的限制，可以有效应用在小批次的样本中。
 
-  \item 层归一化（Layer Normalization, LN）
-  LN就是BN在组数为1的特殊情况，即对该次输入所有通道的所有元素进行归一化，该方法同样不依赖于batch size，其更新公式同上。
 \end{enumerate}
 
 
@@ -550,22 +545,6 @@ Adam优化器在网络模型参数初始化后，还要初始化优化器的超�
 \end{equation}
 其中，$m_t, v_t$分别表示一阶和二阶动量，$\hat{m}_t, \hat{v}_t$分别表示对一阶以及二阶动量校正偏差后的值的估计。
 $\Delta\theta_t$ 表示每部参数更新的量，$\theta_t$表示第$t$步中网络参数值。
-
-
-\xsubsection{注意力机制}{attention}
-注意力机制(Attention)是由 Bahdanau等人于2014年提出的\cite{2014Neural}，最初应用于自然语言处理领域，此后由于其性能优秀而广泛应用在各个领域。
-attention机制让神经网络能够关注输入数据的某些相关的信息，而减少对无用信息的关注。这种思想源于人们的视觉系统，即人们在看到一张图片或视频时通常会关注其中感兴趣的部分。
-
-attention通常包含三个重要的部分，即：
-\begin{enumerate}
-  \item 查询矩阵（query, Q）： 其中的值代表模型应该更加关注输入数据中的某些部分，即Q作为输入向量的某种表示，可以反映模型更加需要关注的内容。
-  \item 键（key, K）：表示输入向量的特征。
-  \item 值（values, V）：是K对应输入向量的另一维度的特征，用于和QK所获得的的相似度进行加权和。
-\end{enumerate}
-
-其基本原理为：首先计算出Q和K的相似度，然后利用Softmax进行归一化算出每个元素所对应各权重，最后利用上一步计算的结果与V中的元素做加权和，以输出最终的结果。
-其中，由于相似度计算方式的不同以及Q、K、V选择方式的不同，就产生了attention的各种应用以及变体，包括自注意力机制（Self-attention），交叉注意力机制（Cross-attention）等。
-
 
 \xsection{生成式模型}{Generative Models}
 EIT图像重建算法的任务目标即是在给定边界条件下生成出符合原始电导率分布的图像。
@@ -636,63 +615,20 @@ EIT图像重建算法的任务目标即是在给定边界条件下生成出符�
 即，最大化在$z$上采样的结果经过VAE后输出的重构结果为$x$的概率（等价于最小化网络输出结果与真实数据之间的均方误差），且让$q(z|x)$和$p(z)$尽可能相似。
 
 
-除了VAE之外，Jonathan Ho等人提出的去噪的扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models, DDPM）以及后续的各种变体如条件扩散模型\cite{CondDDPM}（Conditional Denoising Diffusion Probabilistic Models），稳定扩散\cite{StableDiffusion}（Stable Diffusion）等已在图像生成领域取得了显著的成绩。
+除了VAE之外，Jonathan Ho等人提出的去噪的扩散概率模型\cite{DDPM}（Denoising Diffusion Probabilistic Models, DDPM）如\cref{figure:DDPM}以及后续的各种变体如条件扩散模型\cite{CondDDPM}（Conditional Denoising Diffusion Probabilistic Models），稳定扩散\cite{StableDiffusion}（Stable Diffusion）等已在图像生成领域取得了显著的成绩。
 扩散模型的思想源于非平衡统计物理，其通过迭代完成正向的扩散过程从而系统、缓慢地破坏数据的结构。此后利用深度学习模型学习逆扩散的过程，从而恢复数据中的结构。由此产生了一个高度灵活且易于处理的数据生成模型。
 其中，扩散的迭代次数通常可设定为千次左右。
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.7\textwidth]{DDPM.jpg}
+  \caption{DDPM原理}
+  \label{figure:DDPM}
+  \end{figure}
 
-该模型共包含两个主要部分，即正向扩散部分和逆向数据恢复部分。均可看作是一个参数化的马尔科夫链（Markov Chain）。
 该模型同样是一个隐变量模型，即$p_\theta(x_o) \coloneqq \int p_\theta(x_{0:T})\diff x_{1:T}$，其中$x_1,...x_T$为隐变量，其大小和输入的$x_0$相同。
-
-正向或（扩散）过程（froward process 或 diffusion process）如\cref{figure:Diffusionforward}所示。
-
-\begin{figure}[h]
-  \includegraphics[width=.7\textwidth]{diffusionforward.png}
-  \caption{DDPM加噪过程}
-  \label{figure:Diffusionforward}
-\end{figure}
-
-该过程通过向原始的数据中不断加入已知的高斯噪声，随着噪声的不断增加该数据将趋近于一个高斯分布。
-其中，$x_0$是原始的数据分布，$x_1, x_2,..,x_t$，$t=1:T$是第$t$步加噪声后的结果。
-由于马尔科夫链中第$t$步的$x_t$只与$t_1$时刻的$x_{t-1}$有关，故可得近似后验概率$q(x_{1:T}|x_0)$为：
-
-\begin{equation}
-  \centering
-  q(x_{1:T}|x_0) = \prod_{t=1}{T} q(x_t|x_{t-1}) \qquad
-  q(x_t|x_{t-1}) = \mathcal{N}(x_t; \sqrt{1-\beta_t}x_{t-1}, \beta_t\mbs{I})
-\end{equation}
-其中，$t$为时间轴，通常定义为$0-1000$（线性，也可以为cosine等），$\beta_t$是方差序列（variance schedue）用来控制噪声与信号混合的比例，
-满足$\beta_1 < \beta_2 <...<\beta_T$。
-经推导\cite{DDPM}可得出$t$t时刻的隐变量$x_t$可由原始数据分布$x_0$得到：
-\begin{equation}
-  \centering
-  q(x_t|x_0) = \mathcal{N}(x_t; \sqrt{\bar{\alpha_t}x_0}, (1-\bar{\alpha}\mbs{I}))
-\end{equation}
-
-其中，逆向过程（resverse process）是从一个高斯分布中不断去噪声，从而恢复出原始的数据分布的过程，如\cref{figure:Diffusionreverse}所示。
-
-\begin{figure}[h]
-  \centering
-  \includegraphics[width=.7\textwidth]{diffusionreverse.jpg}
-  \caption{DDPM去噪过程}
-  \label{figure:Diffusionreverse}
-\end{figure}
-
-该过程定义为$p_\theta(x_{0:T})$，则只要得到$q(x_{t-1}|x_t)$，就可以从一个高斯噪声中还原出原本的数据点$x_0$。
-该模型利用$p_\theta(x_{t-1}|x_{t})$来近似该分布。
-\begin{equation}
-  \centering
-  p_\theta(x_{T}) = \prod_{t=1}{T} q(x_{t-1}|x_{t}) \qquad
-  p_\theta(x_{t-1}|x_{t}) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \Sigma_\theta(x_t, t))
-\end{equation}
-
-在上式中，均值
-\begin{equation}
-  \mu_\theta = \frac{1}{\sqrt{\alpha_t}}(x_t - \frac{\beta_t}{\sqrt{1-\hat{\alpha_t}}}\epsilon_\theta(x_t, t))  
-\end{equation}
-故只需要利用神经网络拟合出从$t$时刻到$t-1$时刻所需要添加的噪声$\epsilon_\theta(x_t, t)$网络即可推断出原始的数据点。
-
-去噪声网络通常利用U-net实现，其通过最小化每一步骤中真实加入的噪声和该网络生成的噪声的均方误差从而训练整个网络使其收敛。
-此后，该模型正向推理的过程从一个高斯噪声开始，经过$T:1$时刻通过训练好的去噪网络分别计算出每个时刻需要去掉的噪声，从而获得生成的最终结果。
+DDPM共包含两个主要部分，即正向扩散部分和逆向数据恢复部分。其中，通过不断添加高斯噪声使得原始数据映射到各向同性的高斯分布的过程称为扩散过程。在该过程中，原始的数据分布将随着时间逐渐扩散，并且不断接近高斯分布。
+而将高斯分布通过加权的方式去噪声的过程通常称为逆扩散过程。两个过程均可看作是一个参数化的马尔科夫链（Markov Chain）。
+因此，只需要训练一个用于生成每一步逆扩散过程中用于去噪声的网络，即可实现对于原始数据分布的拟合。
 
 
 \xsubsection{小结}{Summary}
