@@ -209,7 +209,7 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 其中重建结果如\cref{figure:Reconsresexp}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.7\textwidth]{Reconsresexp.PNG}
+    \includegraphics[width=.5\textwidth]{Reconsresexp.PNG}
     \caption{EIT物理实验结果}
     \label{figure:Reconsresexp}
 \end{figure}
@@ -245,7 +245,7 @@ VEncoder的目标是对EIT电压数据进行编码，使得编码后的结果尽
 替代了FCN层，从而实现了一个RBF-CNN 以替代原来的VEncoder。其结构如\cref{figure:RBFCNN}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{RBFCNN.png}
+    \includegraphics[width=.9\textwidth]{RBFCNN.png}
     \caption{RBFCNN结构}
     \label{figure:RBFCNN}
 \end{figure}
@@ -257,7 +257,7 @@ VEncoder的目标是对EIT电压数据进行编码，使得编码后的结果尽
 大小为六边形，且其电导率根据距中心的距离而减小，如\cref{figure:RBF_cond}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{RBF_cond.png}
+    \includegraphics[width=.3\textwidth]{RBF_cond.png}
     \caption{EIT仿真结果}
     \label{figure:RBF_cond}
 \end{figure}
@@ -294,7 +294,7 @@ $m$ 是隐含层神经元的数量。
 \begin{figure}[H]
     \centering
     
-    \includegraphics[width=.7\textwidth]{recons_rbf.png}
+    \includegraphics[width=.8\textwidth]{recons_rbf.png}
     \label{figure:recons_rbf}
     \caption{重建结果对比}
 \end{figure}
@@ -318,39 +318,82 @@ $m$ 是隐含层神经元的数量。
 
 通过相对误差和重建结果可分析得出，带有RBFNN的重建结果相较于不带RBFNN的重建结果有显著提升，
 因此认为RBFNN对于EIT电压-电导率映射的拟合有显著作用。
-此外，adam优化器对EIT重建结果具有显著的提升。
+同时，根据实验结果可得出adam优化器对EIT重建结果具有显著的提升。
+
+随后，本文分别计算了原始编码器FCN-VEncoder 和RBF-CNN-VEncoder的参数数量，并比较了两者的时间性能，如\cref{table:RBFCNNTime}所示。
+\begin{table}[H]
+    \centering
+    \caption{网络评估}
+    \label{table:RBFCNNTime}
+    \begin{tblr}{colspec={X[c] X[c] X[c] X[c]}}
+        \toprule
+        模型类型 & 参数量 & 完成一次推断所需的平均时间(s) & 完整的模型完成一次推断所需的平均时间(s) \\
+        \midrule
+        RBF-CNN-VEncoder &1084160 & 0.0085s & 0.1613s \\ 
+        FCN-VEncoder & 33554432 & 0.0311s & 0.1877s \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+
+根据该结果可以看出，利用RBF-CNN实现的电压编码器不但具有更好的特征提取能力，同时其空间开销大约是FCN-VEncoder空间开销的32.31\%，
+且时间开销约是原先编码器的27.33\%，以使得整个算法加快了约14.06\%。
+
+此外，本节还对改进后的VEncoder以及第三章所提到的CEncoder得到的中间结果进行了分析。
+具体而言，通过编码器的输入指出了该编码器-解码器结构对于模型重建效果的提升。
+首先评估了该EIT重建任务中各个信号之间的相关性，如\cref{table:CoorSig}
+
+\begin{table}[h]
+  
+    
+    \caption{EIT信号之间的相关性分析}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    信号类型1 & 信号类型2 & 平均相关系数 \\
+    \midrule
+    原始的电压分布 & 原始的电导率分布 & 0.0049 \\
+    编码后的电压分布 & 电导率分布 &  0.2724\\
+    编码后的电压分布 & 编码后的电导率分布 & 0.5285 \\
+    原始的电导率分布 & 编码后的电导率分布 & 0.5389 \\
+    \bottomrule
+    \end{tblr}
+    \label{table:CoorSig}
+\end{table}
+
+可以看出，
+
+ 1）编码前的电压和电导率之间相关性极低（由于电压信号与电导率信号的维度不同，故采取给电压向量结尾补0的方式让其与电导率分布长度相同，这种做法有可能会导致其相关性降低，不过在此处是唯一可行的比较方式）。
+ 
+ 2）经过编码后的电压信号与原始的电导率分布之间的相关性有明显提高，这将更有利于最终的图像重建任务。
+ 
+ 3）经过编码后的电导率信号和经过编码后的电压信号具有更强的相关性，同时经过编码后的电导率信号与原始的电导率同样具有较高的相关性，这表明编码器不但提高了电压-电导率之间的相关性，还不会破坏其与原始数据之间的关联。
 
 
+更进一步，由于编码后的电压分布与电导率分布具有相同的特征数目，故可将编码后的电压信号利用其每个维度特征的值可视化，如\cref{figure:EncodedV1}，\cref{figure:EncodedV2}所示。
 
-
-111
-
-111
-
-
-111
-此外，由于EIT图像重建算法固有的病态性，即微小的电压变化就会对重建结果产生巨大的影响，因此本文设计了一个去噪声网络，该网络结构与\cref{RBF}所提出的网络架构基本一致，
-不同的是将网络的输出层用一个全连接的网络替代，使得输出结果为一个256维的向量，用于表示该真实电压分布所对应的电压仿真结果，起到了去噪声的效果。
-该网络用于拟合真实测量的电压分布到仿真的电压分布的映射，用于对测得的电压分布进行去噪。
-
-具体而言，利用采集到的数据帧进行邻近测量的差分处理后，同时利用同样电导率分布的仿真模型经过EIT正向计算获得电压向量，
-利用两个电压向量作为训练数据。其中，仿真的电压数据作为网络的预期输出，而测量所得到的电压数据作为网络的输入数据。
-该数据集共包含2000条数据，随后按照训练集-测试集8：2的方式进行划分，由此所得到的去噪网络的
-
-利用该去噪网络，本文对电导率为0.05S/m，底面直径为2.5cm的的扰动目标重新进行了成像，所得到的的结果如\cref{figure:resgood}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{resgood.png}
-    \caption{经过电压去噪声后的重建结果}
-    \label{figure:resgood}
+    \includegraphics[width=0.85\textwidth]{EncodedV1.png}
+    \caption{编码后的电压和真实电导率对比（大目标）}
+    \label{figure:EncodedV1}
 \end{figure}
 
-可以看到，经过电压去噪网络后，该算法能有效地重建出小目标的电导率分布。
-故在实际的应用中，可以首先针对不同的EIT采集设备设计适用于其的电压去噪声网络，随后去噪后的EIT电压数据进行图像重建任务，
-即可最大程度上减少由于测量电压分布于真实电压分布不同而导致的图像重建质量差的问题。
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{EncodedV2.png}
+    \caption{编码后的电压和真实电导率对比（小目标）}
+    \label{figure:EncodedV2}
+\end{figure}
 
-\xsubsection{小结}{Summary}
+其中，每组图像中，左侧为编码后的电压可视化后的结果，右侧为电导率分布的实际结果，可以看出，该编码器一定程度上让电压信号映射到了与电导率分布特征相关的隐空间中，
+这种变换对于成像目标较大的电导率向量更敏感，而对于成像目标较小的数据效果不佳。
+
+
+\xsection{小结}{Summary}
 
 本章利用本文所提出的生成式EIT图像重建算法，并根据脑卒中的类别设计物理实验，制作了不同的扰目标来验证该算法应用在脑卒中快速鉴别任务上的优势。
 随后实现了对于不同电导率分布的扰动目标的图像重建任务。实验结果表明，该算法能有效区分不同电导率的扰动目标，即该算法可用于不同类型的脑卒中快速鉴别任务很中。
-此外，本章还设计的一个电压去噪声网络，通过拟合测量电压到仿真电压的映射，从而使得该算法能更有效地重建出小目标的电导率分布。
+此外，本节还对电压编码器VEncoder的性能进行了分析，指出了其不足之处。随后提出了CNN-RBF-VEncoder用于对电压数据进行编码，并设计实验验证了该编码器的性能。
+最后指出了本文所提出的CEncoder和VEncoder能够有效提高EIT电压-电导率之间的相关性，验证了其对于深层次特征的提取的能力。
+

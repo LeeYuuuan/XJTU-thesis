@@ -155,10 +155,10 @@ EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心阶�
     \toprule
     层数 & 输入 & 网络类型  & 输出\\
     \midrule
-    1 & $input$ & Linear & $v_1=\text{Linear}(input)$, $residue_1=input$  \\
+    1 & $input$ & Linear $\times 5$ & $v_1=\text{Linear}(input)$, $residue_1=input$  \\
     2 & $v_1$ & LayerNorm & $v_2=\text{LayerNorm}(v_1)$ \\
     3 & $v_2, residue_1$ & SelfAttention & $v_3 = \text{SelfAttention}(v_2) + residue_1, residue_2 = v_2$\\
-    4 & $v_3$ & Linear & $v_4 = \text{Linear}(v_3)$ \\
+    4 & $v_3$ & Linear $\times 5$& $v_4 = \text{Linear}(v_3)$ \\
     5 & $v_4$ & QuickGELU & $v_5 = \text{QuickGELU}(v_4)$ \\
     6 & $v_5, residue_2$ & Linear & $v_6 = \text{Linear}(v_5) + residue_2$\\
     7 & $output$ & Linear & $output = \text{Linear}(v_6)$\\
