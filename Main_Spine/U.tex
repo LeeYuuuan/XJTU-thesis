@@ -1,0 +1,119 @@
+\begin{figure}[h]
+  \includegraphics[width=.7\textwidth]{diffusionforward.png}
+  \caption{DDPM加噪过程}
+  \label{figure:Diffusionforward}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=.7\textwidth]{diffusionreverse.jpg}
+  \caption{DDPM去噪过程}
+  \label{figure:Diffusionreverse}
+\end{figure}
+
+
+
+如\cref{figure:ddpm_EIT}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.8\textwidth]{ddpm_EIT.JPG}
+    \caption{利用扩散概率模型实现EIT图像重建}
+    \label{figure:ddpm_EIT}
+\end{figure}
+
+
+
+模型结构如\cref{figure:DDPMreconstruction}所示。
+
+
+
+其通过最小化每一步骤中真实加入的噪声和该网络生成的噪声的均方误差从而训练整个网络使其收敛。
+此后，该模型正向推理的过程从一个高斯噪声开始，经过$T:1$时刻通过训练好的去噪网络分别计算出每个时刻需要去掉的噪声，从而获得生成的最终结果。
+
+
+
+
+
+
+该方差序列从$\beta_1 = 10^{-4}$开始，到$\beta_T = 0.02$，按照线性插值方式对其插值。其作为每次添加噪声的方差，并通过加权和的方式将噪声加入该时刻代表电导率分布的隐变量中。
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.9\textwidth]{DDPMreconstruction.PNG}
+    \caption{图像重建块模型结构}
+    \label{figure:DDPMreconstruction}
+\end{figure}
+
+
+其中，Sampler 为用于采样 $t$时刻加噪声后的数据$x_t$，即Diffusion model的正向扩散过程；
+Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要根据输入的当前时间$t$、引导图像生成的条件向量（本文中为测量的边界电压分布）$v$以及当前时刻生成结果$x_t$，
+来预测$t-1$时刻需要减掉的噪声，进一步计算出$x_{t-1}$步的生成结果。不断循环预测的过程，即可回复原始数据$x_0$。
+本节将首先介绍整个图像重建块的架构，然后再阐述本文所实现的生成式EIT图像重建算法中生成噪声的网络的架构以及如何利用Cross-Attention机制将电压分布嵌入到网络的输入中。
+
+
+本节还通过编码器的输入指出了该编码器-解码器结构对于模型重建效果的提升。
+
+
+
+
+
+
+
+
+此外，本文还对CEncoder和VEncoder的性能进行了评估和分析。首先评估了该EIT重建任务中各个信号之间的相关性，如\cref{table:CoorSig}
+
+\begin{table}
+  
+    
+    \caption{EIT信号之间的相关性分析}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    信号类型1 & 信号类型2 & 平均相关系数 \\
+    \midrule
+    原始的电压分布 & 原始的电导率分布 & 0.0049 \\
+    编码后的电压分布 & 电导率分布 &  0.2724\\
+    编码后的电压分布 & 编码后的电导率分布 & 0.5285 \\
+    原始的电导率分布 & 编码后的电导率分布 & 0.5389 \\
+    \bottomrule
+    \end{tblr}
+    \label{table:CoorSig}
+\end{table}
+
+可以看出，
+\begin{enumerate}
+    \item 编码前的电压和电导率之间相关性极低（由于电压信号与电导率信号的维度不同，故采取给电压向量结尾补0的方式让其与电导率分布长度相同，这种做法有可能会导致其相关性降低，不过在此处是唯一可行的比较方式）。
+    \item 经过编码后的电压信号与原始的电导率分布之间的相关性有明显提高，这将更有利于最终的图像重建任务。
+    \item 经过编码后的电导率信号和经过编码后的电压信号具有更强的相关性，同时经过编码后的电导率信号与原始的电导率同样具有较高的相关性，这表明编码器不但提高了电压-电导率之间的相关性，还不会破坏其与原始数据之间的关联。
+\end{enumerate}
+
+更进一步，由于编码后的电压分布与电导率分布具有相同的特征数目，故可将编码后的电压信号利用其每个维度特征的值可视化，如\cref{figure:encodedV1}，\cref{figure:encodedV1}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{EncodedV1.png}
+    \caption{编码后的电压和真实电导率对比（大目标）}
+    \label{figure:EncodedV1}
+\end{figure}
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=1\textwidth]{EncodedV2.png}
+    \caption{编码后的电压和真实电导率对比（小目标）}
+    \label{figure:EncodedV2}
+\end{figure}
+
+其中，每组图像中，左侧为编码后的电压可视化后的结果，右侧为电导率分布的实际结果，可以看出，该编码器一定程度上让电压信号映射到了与电导率分布特征相关的隐空间中，
+这种变换对于成像目标较大的电导率向量更敏感，而对于成像目标较小的数据效果不佳。
+
+
+
+
+
+
+\xsection{径向基函数神经网络}{}
+\label{RBF}
+

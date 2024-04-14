@@ -2,7 +2,10 @@
 
 \xchapter{用于脑卒中快速鉴别的生成式EIT图像重建实验}{The Experiment of EIT Reconstruction for Fast Detection of Stroke}
 在上一章中，我们通过EIDORS生成的仿真数据对本文提出的生成式EIT图像重建网络进行了训练和评估，验证了该模型能显著提高EIT图像重建结果的重建分辨率。
-本章将在该模型的基础上，通过实验验证该模型用于脑卒中快速鉴别的可行性以及其算法的优势。此外，本章还会对训练集的生成进行了研究，并且根据研究结果优化了网络结构。
+本章将在该模型的基础上，通过实验验证该模型用于脑卒中快速鉴别的可行性以及其算法的优势，同时对该算法的不足之处进行优化。
+此外，本章还会对训练集的生成进行了研究，并且根据研究结果优化了网络结构。
+
+
 
 \xsection{用于脑卒中快速鉴别的生成式EIT图像重建物理实验}{The Physical Experiment of EIT Reconstruction for Fast Detection of Stroke}
 
@@ -49,17 +52,16 @@ EIT成像目标包括背景帧以及扰动目标，本节将首先介绍扰动�
 \end{table}
 
 
-具体步骤如\cref{figure:experiment}所示，
-\begin{enumerate}
-    \item 用电子秤称取1.5g的琼脂粉。
-    \item 将称好的琼脂粉倒入烧杯中。
-    \item 像烧杯中加入100ml的蒸馏水，并将其与琼脂粉冲分混合。
-    \item 再利用电子秤称取一定量的氯化钠粉末。
-    \item 将称取的氯化钠粉末倒入琼脂溶液中。
-    \item 利用高温加热炉，将上述混合溶液加热至沸腾，并在加热的过程中冲分搅拌使其溶解（根据实测在常压下需要保持270摄氏度左右）。
-    \item 将充分溶解的溶液倒入尺寸不同的陶瓷容器中，静置2小时待其凝固。
-    \item 将凝固的琼脂快取出备用。
-\end{enumerate}
+具体步骤如\cref{figure:experiment}，即：
+1） 用电子秤称取1.5g的琼脂粉。
+2） 将称好的琼脂粉倒入烧杯中。
+3） 像烧杯中加入100ml的蒸馏水，并将其与琼脂粉冲分混合。
+4） 再利用电子秤称取一定量的氯化钠粉末。
+5） 将称取的氯化钠粉末倒入琼脂溶液中。
+6） 利用高温加热炉，将上述混合溶液加热至沸腾，并在加热的过程中冲分搅拌使其溶解（根据实测在常压下需要保持270摄氏度左右）。
+7） 将充分溶解的溶液倒入尺寸不同的陶瓷容器中，静置2小时待其凝固。
+8） 将凝固的琼脂快取出备用。
+
 
 以上过程为EIT物理模型中扰动目标的制作方式，上述两种扰动目标将分别代表两类卒中的病灶区域。本实验将用硫酸钙溶液来模拟颅内的正常脑组织，作为病灶区域的背景帧溶液。
 由于电介质的溶解率受到温度、压强、震动等外在因素影响显著，而溶液的电导率对电介质含量非常敏感，因此本实验将利用饱和硫酸钙溶液作为背景帧，以将制作过程中产生的误差降到最低，从而使得仿真过程中使用到的背景电导率与物理实验的背景电导率在最大程度上保持一致。
@@ -71,14 +73,23 @@ EIT成像目标包括背景帧以及扰动目标，本节将首先介绍扰动�
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.9\textwidth]{experiment.png}
+    \includegraphics[width=.8\textwidth]{experiment.png}
     \caption{EIT扰动目标制作流程}
     \label{figure:experiment}
 \end{figure}
 
-随后利用阻抗分析仪测量上述扰动目标的电导率，验证其电导率的准确性。
+随后利用阻抗分析仪（如\cref{figure:zukangfenxiyi}）测量上述扰动目标的电导率，验证其电导率的准确性。
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.8\textwidth]{zukangfenxiyi.JPG}
+    \caption{阻抗分析仪}
+    \label{figure:zukangfenxiyi}
+\end{figure}
+
 本实验中，为了更好的区分不同电导率的扰动目标，用黄色琼脂块表示电导率为0.5S/m的扰动目标
-，而用蓝色琼脂块表示电导率为0.05S/m的扰动目标。如图\cref{figure:QiongZhiKuai}所示
+，而用蓝色琼脂块表示电导率为0.05S/m的扰动目标。如\cref{figure:QiongZhiKuai}所示
+
 
 \begin{figure}[h]
     \centering
@@ -102,20 +113,20 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 
 \begin{figure}
     \centering
-    \includegraphics[width=.7\textwidth]{Phantom.png}
+    \includegraphics[width=.6\textwidth]{Phantom.png}
     \caption{EIT待测场设置}
     \label{figure:Phantom}
 \end{figure}
 
 \begin{figure}
     \centering
-    \includegraphics[width=.7\textwidth]{CableSet.png}
+    \includegraphics[width=.6\textwidth]{CableSet.png}
     \caption{EIT连接电缆图示}
     \label{figure:CableSet}
 \end{figure}
 
-最后将扰动目标放入其待测场内，即可制作完成用于测量的电导率分布未知场。如\cref{figure:raodongmubiao}
-\begin{figure}[h]
+最后将扰动目标放入其待测场内，即可制作完成用于测量的电导率分布未知场。如\cref{figure:raodongmubiao}所示。
+\begin{figure}[H]
     \centering
     \includegraphics[width=.5\textwidth]{raodongmubiao.jpg}
     \caption{待测场图示}
@@ -135,15 +146,15 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 为防止琼脂块在空气中水分子的流失导致其形变，进而影响其放置在水槽中的稳定性，第二次测量采集需要重新制作电导率为0.5S/m的琼脂块3个，制作好后立即展开第二部分实验。
 
 第一部分其具体流程为：
-\begin{enumerate}
-    \item 静置好的物理容器连接EIT采集系统，并将EIT采集系统连接至PC，随后通过其串口设置好电流强度、激励频率、激励模式等参数（见上一节），打开EIT采集系统。
-    \item 静置1分钟后再，等待20秒，记录20帧背景帧的电位数据的编号信息。
-    \item 向硫酸给溶液中位置1处放置1号扰动目标，静置1分钟后记录采集到的20帧电位数据的编号。
-    \item 将1号扰动目标移动至位置2，静置1分钟后记录采集到的的20帧电位数据的编号。
-    \item 将1号扰动目标移动至位置3，重复上述步骤。
-    \item 将1号扰动目标取出，将2号、3号扰动目标分别放置于上述三个位置上，并重复静置、记录的步骤。
-    \item 将扰动目标取出，关闭EIT设备。
-\end{enumerate}
+
+     1）静置好的物理容器连接EIT采集系统，并将EIT采集系统连接至PC，随后通过其串口设置好电流强度、激励频率、激励模式等参数（见上一节），打开EIT采集系统。
+     2）静置1分钟后再，等待20秒，记录20帧背景帧的电位数据的编号信息。
+     3）向硫酸给溶液中位置1处放置1号扰动目标，静置1分钟后记录采集到的20帧电位数据的编号。
+     4）将1号扰动目标移动至位置2，静置1分钟后记录采集到的的20帧电位数据的编号。
+     5）将1号扰动目标移动至位置3，重复上述步骤。
+     6）将1号扰动目标取出，将2号、3号扰动目标分别放置于上述三个位置上，并重复静置、记录的步骤。
+     7）将扰动目标取出，关闭EIT设备。
+
 
 第二部分对扰动目标为0.5S/m的三个琼脂块开展与第一部分流程相同的实验。至此已获得初步的物理实验数据待后续使用。
 
@@ -187,52 +198,137 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 随后在其中随机选择20帧，计算所选数据每个通道上的平均值，利用该值作为最终用于成像的电压数据，以此减小其由于水面波动以及其他外界因素导致的误差。
 \xsection{实验结果与分析}{Experiment Results}
 
-上述实验已获得2个不同电导率分布（分别为0.05S/m和0.5S/m）3个不同大小（直径分别为5cm、4cm和2.5cm）的扰动目标分别在饱和硫酸钙溶液中3个不同位置下的电位向量（每个向量包含256个元素）。
+本节利用上述采集到的的电压数据分别从其重建图像分辨率、以及时间性能评估了上一章中所提出的图像重建算法，分别阐述了该算法的优势和不足。
+随后改进了上一章中电压编码器VEncoder，进一步优化了该重建算法的性能。
+最后还对数据集的选择做出了详细的分析，提高了该模型的训练效率。
 
-其中，0.05S/m，直径分别为5cm和4cm的扰动目标的重建结果如\cref{figure:res_low}， \cref{figure:DRECONS}所示。
+\xsubsection{图像重建质量分析}{Analysis of Quality of Reconstructed Image}
+
+上述实验已获得2个不同电导率分布（分别为0.05S/m和0.5S/m）的扰动目标分别在饱和硫酸钙溶液中3个不同位置下的电位向量（每个向量包含256个元素）。
+
+其中重建结果如\cref{figure:Reconsresexp}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{res_low.JPG}
-    \caption{EIT物理实验结果(1)}
-    \label{figure:res_low}
-\end{figure}
-其中，第一行依次分别为5cm的扰动目标分别位于水槽中心、水槽中心向上2cm处、和水槽中心向上4cm处的重建结果；
-第二行依次分别为4cm的扰动目标分别位于水槽中心、水槽中心向左2cm处、和水槽中心向左4cm处的重建结果。
-
-而\cref{figure:DRECONS}所示的结果则是扰动目标大小为2.5cm位置分别位于水槽中心、水槽中心向下2cm处、和水槽中心向下4cm处的重建结果。
-
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.5\textwidth]{DRECONS.png}
-    \caption{EIT物理实验结果(2)}
-    \label{figure:DRECONS}
+    \includegraphics[width=.7\textwidth]{Reconsresexp.PNG}
+    \caption{EIT物理实验结果}
+    \label{figure:Reconsresexp}
 \end{figure}
 
-\cref{figure:res_high}所示为0.5S/m的扰动目标在与上述位置相同的位置下的重建结果。
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.5\textwidth]{res_high.JPG}
-    \caption{EIT物理实验结果(2)}
-    \label{figure:res_high}
-\end{figure}
 
 根据以上结果可以看出：
-\begin{enumerate}
-    \item 本文所提出的算法可以有效区分不同电导率下的扰动目标，即可以实现对不同类型的卒中进行快速鉴别。
-    \item 该算法一定程度上可以重建出较大目标的位置，并且对于场域中心的目标成像质量也较高（传统的重建算法通常无法对原理边界的扰动目标进行高质量成像）。
-    \item 该算法对较小目标的成像结果不是很理想，可以看到，对于直径为2.5cm、电导率为0.05S/m的扰动目标，该算法仅能判断出该目标所属的类型（即电导率分布情况），而无法准确判断出目标的位置。
-    \item 该算法无法对成像目标的大小进行准确地重建。
-\end{enumerate}
+
+     1）本文所提出的算法可以有效区分不同电导率下的扰动目标，即可以实现对不同类型的卒中进行快速鉴别。
+     2）该算法可以有效对场域中不同位置的扰动目标成像。（传统EIT图像重建算法对接近场域中心的扰动目标成像效果差）。
+     3）该算法对尺寸较小的扰动目标的成像分辨率不如尺寸较大的扰动目标。
+
 
 据分析，上述第3条结果可能的原因如下：由于该扰动目标的尺寸较小，同时采集到的数据包含大量噪声，因此该采集结果中信噪比较低，
 同时训练集的并没有直接包含该尺寸的扰动目标，故使得该网络无法对该类型的扰动目标准确地提取特征并成像。
-
-虽然网络对该目标的大小和位置成像结果较差，但通过结论可以发现，本文所提出的算法对与原先数据分布有很大差异的电压数据其中有关电导率分布值的特征提取能力较强。
+此外，但通过结论可以发现，本文所提出的算法对与原先数据分布有很大差异的电压数据其中有关电导率分布值的特征提取能力较强。
 即准确地展现出了该扰动目标的电导率分布，这一定程度上体现出该算法的在对扰动目标电导率分布值的拟合的泛化能力较强。
+因此可有效地区分出不同电导率分布的扰动目标，进而应用在对于脑卒中快速鉴别的任务中。
 
-而第4条结果同样可能是由于扰动目标的半径范围较小，这就导致网络训练不足，从而无法从输入数据中准确提取出扰动目标大小的特征，
-进而无法准确重建出扰动目标的大小。
+\xsubsection{时间性能分析}{Analysis of Time Performance}
 
+由于基于深度学习的EIT图像重建算法在图像重建的过程中只需要执行一次网络的正向推理，因此该类算法相较于传统基于迭代的EIT图像重建算法有显著的时间性能优势。
+由于两类算法的实现平台不同，以下比较具有一定的局限性，但其单次的计算时间具有多个数量级的差距，故仍可得出上述结论。
+
+以32次重建为一组（与网络的batch数目相同）传统的N-R方法需要3.3941s（基于Matlab 2022实现， 操作系统环境：Windows 10）。
+而利用本文所提出的EIT图像重建算法仅需要0.1877s（运算环境：python 3.10.12， Torch 2.2.1+cu121，GPU：Tesla 4 15360MiB，cuda 12.2, V12.2.140）。
+故该算法具有明显的时间性能优势。
+
+然而该算法的网络训练过程仍然非常耗时，其各模块训练时长共计约40小时。分析网络结构可得，
+除了必要的模块外，VEncoder模块中的全连接网络大大降低了该算法的运行效率以及空间利用率，因此本节将会对该模块进行优化。
+
+VEncoder的目标是对EIT电压数据进行编码，使得编码后的结果尽可能表达出更强有关于该电压数据所对应的电导率分布的特征。
+而CNN对于高维数据的空间特征提取能力具有显著的优势。同时，CNN也相较于MLP而言具有更少的可学习参数。因此，此节以CNN为主体，利用径向基函数神经网络（Radial Basis Function Neural Network）
+替代了FCN层，从而实现了一个RBF-CNN 以替代原来的VEncoder。其结构如\cref{figure:RBFCNN}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{RBFCNN.png}
+    \caption{RBFCNN结构}
+    \label{figure:RBFCNN}
+\end{figure}
+
+为验证该RBF-CNN对于EIT数据优秀的拟合能力，本节利用该网络实现一个EIT逆问题求解器。只要该网络能重建出明显高质量的EIT图像，则证明该网络可以提取出能表达EIT电压数据有关其对应的电导率分布的特征。
+
+首先利用仿真模型获得EIT电压-电导率分布数据集，
+其中，$d_m =  576$ ，即剖分的单元个数为576。$d_v = 192$ 即测量电压向量为192维。背景电导率为$0.15S/m$，扰动目标的中心电导率为0.7S/m。
+大小为六边形，且其电导率根据距中心的距离而减小，如\cref{figure:RBF_cond}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{RBF_cond.png}
+    \caption{EIT仿真结果}
+    \label{figure:RBF_cond}
+\end{figure}
+
+由于卷积层输出的每个元素都包含原始数据的空间特征，因此输出层包含 512 个神经元，代表更深层次的特征。
+此后为一个径向基函数神经网络（RBFNN），输入层有512个神经元，输出层有576个神经元，分别代表每个元素的电导率。
+众所周知，多层感知器包含点积（输入和权重之间）和激活（非线性）函数（例如 ReLU、Sigmoid 函数）。
+网络训练通常是通过所有层的反向传播来完成的。
+与 MLP 不同，RBFNN 使用欧几里德距离（输入和权重之间，也称为中心）和高斯激活函数，这使得神经元更加局部敏感。 
+RBF 网络具有与 MLP 类似的输入层和输出层。
+不同的是，隐藏层中的每个神经元都有一个原型向量和一个由 $\mu$ 和 $sigma$ 表示的带宽分别计算输入向量与其原型向量之间的相似度，如\cref{equation:RBFNN}所示。
+\begin{equation}
+    \label{equation:RBFNN}
+    y(x) = f(z(x)) = \sum_{i=1}^{m} v_i \phi_i(z(x)) + b
+\end{equation}
+其中：
+\begin{equation}
+    \phi_i(z(x)) = \exp\left(-\frac{|x - \mu_i|^2}{2\sigma_i^2}\right)
+\end{equation}
+
+$y(x)$ 是 RBFNN 的输出；
+$f(\cdot)$ 是输出层的激活函数；$z(x)$ 是隐含层的输出；
+$\phi_i(z(x))$ 是隐含层神经元 $i$ 的激活函数；
+$v_i$ 是连接隐含层和输出层的权重；
+$b$ 是偏置项；
+$m$ 是隐含层神经元的数量。
+
+该网络首先包含 192 个神经元的输入层，分别对应于边界电压的每个维度。接下来有 6 个卷积层，每一步应用 3 × 3 卷积核和最大池化。最后两层应用 3×3 卷积核和 2×2 卷积核平均池，在每个卷积层之后使用指数线性单元（ELU）作为激活函数，因为 ELU 是。
+由于卷积层输出的每个元素都包含原始数据的空间特征，因此输出层包含 512 个神经元，代表更深层次的特征。
+
+利用训练数据初步重建模型，所得的结果如\cref{figure:recons_rbf}所示，其中，
+第一行中的第一张图像是真实值。另外两个分别采用NR方法和学习率=0.0005模型的CNN + RBFNN（Adam）重建。
+第二行的前两张图像由 CNN+ RBFNN (Adam) 重建，学习率 = 0.0001 和 0.001。第三个则则是由单独的CNN（Adam）重建。
+\begin{figure}[H]
+    \centering
+    
+    \includegraphics[width=.7\textwidth]{recons_rbf.png}
+    \label{figure:recons_rbf}
+    \caption{重建结果对比}
+\end{figure}
+
+\cref{table:RBFNNev}为对该网络性能的评估，其中RE和CC分别为相对误差(relative error)和 相关系数(correlation coefficient)。
+(表中仅为最佳学习率下的性能)
+\begin{table}[H]
+    \centering
+    \caption{网络评估}
+    \label{table:RBFNNev}
+    \begin{tblr}{colspec={X[c] X[c] X[c] X[c]}}
+        \toprule
+        模型类型 & 学习率 & CC & RE($\times 10^{-5}$) \\
+        \midrule
+        CNN+RBF(Adam) & 0.0005 & 0.9595 & 5.0552 \\ 
+        CNN+RBF(SGDM) & 0.8& 0.9020 & 7.2939 \\
+        CNN(Adam) & 0.0005 & 0.3694 & 15.0147 \\
+        \bottomrule
+    \end{tblr}
+\end{table}
+
+通过相对误差和重建结果可分析得出，带有RBFNN的重建结果相较于不带RBFNN的重建结果有显著提升，
+因此认为RBFNN对于EIT电压-电导率映射的拟合有显著作用。
+此外，adam优化器对EIT重建结果具有显著的提升。
+
+
+
+
+111
+
+111
+
+
+111
 此外，由于EIT图像重建算法固有的病态性，即微小的电压变化就会对重建结果产生巨大的影响，因此本文设计了一个去噪声网络，该网络结构与\cref{RBF}所提出的网络架构基本一致，
 不同的是将网络的输出层用一个全连接的网络替代，使得输出结果为一个256维的向量，用于表示该真实电压分布所对应的电压仿真结果，起到了去噪声的效果。
 该网络用于拟合真实测量的电压分布到仿真的电压分布的映射，用于对测得的电压分布进行去噪。
