@@ -1,6 +1,6 @@
 % !TeX root = ../main.tex
 
-\xchapter{用于脑卒中快速鉴别的生成式EIT图像重建算法模型}{Model of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+\xchapter{生成式EIT图像重建算法的设计与实现}{Design and Implementation of Generative EIT Reconstruction Algorithm }
 传统的EIT图像重建算法通常利用迭代的思想多次求解EIT正问题、逆问题，以不断最小化每一步求解的电压分布和真实电压分布之间的误差。
 这种做法通常消耗时间长，成像分辨率低。由于EIT正问题仿真模型完备，且相对精确，而常见的深度学习模型则需要大量的训练数据，
 因此基于深度学习的EIT图像重建模型大大提高了EIT图像重建算法的重建分辨率，
@@ -13,19 +13,19 @@
 
 扩散概率模型，作为生成式模型的一种，近年来在图像生成领域已经取得了显著的成果。而EIT图像重建问题本质上是建立从电压分布到电导率分布的非线性映射，
 即可以看作是生成目标为电导率分布，且指导模型生成电导率分布的条件为电压分布的带条件的扩散概率模型。
-利用扩散模型实现EIT图像重建算法，由于扩散模型加噪声、去噪声的过程而一定程度上提高了模型抗噪声的能力，并且通过对推断过程的改进，可
+利用扩散模型实现的EIT图像重建算法由于其具有加噪声、去噪声的过程而一定程度上提高了模型抗噪声的能力。并且通过对推断过程的改进，可
 以有效减少在推理过程中的采样次数，极大程度的缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
 
-本章将重点介绍用于脑卒中快速鉴别的生成式EIT图像重建算法的设计与实现。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
+本章将提出一个生成式EIT图像重建算法，并重点介绍其设计理念与实现过程。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
 模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
 
 
-\xsection{用于脑卒中快速鉴别的生成式EIT图像重建算法设计}{Design of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+\xsection{生成式EIT图像重建算法设计}{Design of Generative EIT Reconstruction Algorithm}
 
 
 EIT图像重建算法就是要利用场域边界电压-电流数据重构出其内部电导率分布。
 但是，电流的激励方式，电压信号的维度等都会影响到EIT图像重建算法的设计，并且同一类型的数据也包含多种表示方式（如电压可表示为矩阵形式和向量形式）。
-因此本节首先定性和定量得描述EIT图像重建问题，随后将提出一个用于脑卒中快速鉴别的生成式EIT图像重建算法。
+因此本节首先定性和定量得描述EIT图像重建问题，随后将提出一个生成式EIT图像重建算法。
 
 \xsubsection{EIT图像重建问题分析}{Analysis of EIT Image Reconstruction Problem}
 
@@ -69,19 +69,19 @@ EIT采集系统的激励模式为邻近激励，单次测量所有激励模式�
     \label{table:param_stm}
 \end{table}
 
-\xsubsection{用于脑卒中快速鉴别的生成式EIT图像重建算法总述}{Overall of of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+\xsubsection{生成式EIT图像重建算法总述}{Overall of of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
 根据上一节的EIT图像重建问题，本节提出了一个用于脑卒中快速鉴别的生成式EIT图像重建算法，如\cref{algorithm:GeneAlgorithm}和\cref{figure:AlgorithmEIT}。
 \begin{figure}[h]
     \centering
     \includegraphics[width=.8\textwidth]{AlgorithmEIT.png}
-    \caption{用于脑卒中快速鉴别的生成式EIT图像重建算法}
+    \caption{生成式EIT图像重建算法}
     \label{figure:AlgorithmEIT}
 \end{figure}
 
 \begin{algorithm}[H]
     
-    \caption{用于脑卒中快速鉴别的生成式EIT图像重建算法}
+    \caption{生成式EIT图像重建算法}
     \begin{algorithmic}[1]
         \State 测量未知场域不含扰动目标的边界电压$v_{0vector}$
         \State 测量含有扰动目标时该场域的边界电压$v_{vector}$
