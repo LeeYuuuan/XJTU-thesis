@@ -107,3 +107,53 @@ Denoising Net 用于生成每一步需要去掉的噪声分布。该部分需要
 此外，但通过结论可以发现，本文所提出的算法对与原先数据分布有很大差异的电压数据其中有关电导率分布值的特征提取能力较强。
 即准确地展现出了该扰动目标的电导率分布，这一定程度上体现出该算法的在对扰动目标电导率分布值的拟合的泛化能力较强。
 因此可有效地区分出不同电导率分布的扰动目标，进而应用在对于脑卒中快速鉴别的任务中。
+
+
+
+
+\xsubsection{归一化}{Normalization}
+在机器学习（尤其是深度学习）任务中，由于不同通道（特征）数据的量纲往往不同，而这种情况通常会影响最终数据分析的结果。
+因此，为了消除这种由于量纲不同而导致模型性能下降的可能性，通常会进行数据标准化（standardization），最常用的方法即数据归一化（Normalization）处理。
+简而言之，归一化的目的就是使得预处理的数据被限定在一定的范围内（比如$[0,1]$或者$[-1,1]$），从而消除奇异样本数据导致的不良影响。
+
+本文将重点介绍模型中使用到的以下三种归一化：
+\begin{enumerate}
+  \item 批归一化（Batch Normalization, BN）
+
+  
+  通过计算一个batch中每一个通道内的所有数据的每一个特征的均值和方差，然后利用\cref{equation:norm}
+
+
+其中，$E\left[ x\right], Var\left[ x\right]$分别是上述数据的均值和方差， $\epsilon$为一趋于0的常数，确保分母大于零，
+$\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
+
+该方法可以加快网络的收敛，提高其训练过程的稳定性，还有助于避免产生梯度消失、梯度爆炸的问题。
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{SNR30.png}
+    \caption{信噪比为30时的重建结果}
+    \label{figure:SNR30}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{SNR20.png}
+    \caption{信噪比为20时的重建结果}
+    \label{figure:SNR20}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{SNR15.png}
+    \caption{信噪比为15时的重建结果}
+    \label{figure:SNR30}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{SNR10.png}
+    \caption{信噪比为10时的重建结果}
+    \label{figure:SNR30}
+\end{figure}
