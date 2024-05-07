@@ -147,7 +147,8 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 上一节针对脑卒中快速鉴别任务，设计了一个EIT物理模型试验。
 本节将利用上一节设计的EIT物理模型实验，生成一组EIT物理模型试验数据，用于模拟脑卒中患者的EIT数据。
 
-\xsection{EIT物理模型试验数据采集}{Data Acquisition of EIT Physical Model Experiment}
+
+\xsubsection{EIT物理模型试验数据采集}{Data Acquisition of EIT Physical Model Experiment}
 
 本节将具体的阐述EIT物理实验数据采集过程，其共分为两个主要部分。第一部分将利用电导率为0.05S/m的琼脂块作为扰动目标，（即\cref{ImageingTarget}中编号为$1-3$的琼脂块。）分别测量其在水槽模型中若干个不同位置下的电位数据。
 第二部分则是利用电导率为0.5S/m的琼脂块作为扰动目标（\cref{ImageingTarget}中编号为4-6的琼脂块），分别测量其在若干位置下的电位数据。
@@ -216,7 +217,86 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 此外，由于EIT采集系统所采用的采集帧率为每秒1帧，故本文将对每个扰动目标放入物理模型且稳定后静置1分钟，获得60帧数据。
 随后在其中随机选择20帧，计算所选数据每个通道上的平均值，利用该值作为最终用于成像的电压数据，以此减小其由于水面波动以及其他外界因素导致的误差。
 
-\xsection{EC-Diffusion 算法性能分析}{Analysis of EC-Diffusion Algorithm}
+\xsection{算法性能分析}{Analysis of Performance of Algorithm}
+
+\xsubsection{EIT物理模型试验图像重建结果}{Image Reconstruction Results of EIT Physical Model Experiment after Optimization}
+利用本文所提出的EC-Diffusion算法对EIT物理模型试验所采集到的电压数据进行重建，如\cref{figure:Reconsresexp}所示：
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=.7\textwidth]{Reconsresexp.PNG}
+    \caption{EIT物理实验结果}
+    \label{figure:Reconsresexp}
+\end{figure}
+该图为2个不同电导率分布（分别为0.05S/m和0.5S/m）的扰动目标分别在饱和硫酸钙溶液中3个不同位置下的电位向量（每个向量包含256个元素）的图像重建结果。
+其中，左图是电导率为0.05S/m的扰动目标的重建结果，右图是电导率为0.5S/m的扰动目标的图像重建结果。
+
+可以看出，优化后的EC-Diffusion算法可以重建出高质量的EIT物理模型实验的电导率分布图像，
+并可有效区分不同电导率分布的扰动目标。同时该算法的时间效率高，满足脑卒中快速鉴别任务的时间性能要求。因此该算法可应用于脑卒中快速鉴别这一任务中。
+
+\xsubsection{EC-Diffusion算法对于噪声的鲁棒性分析}{Robustness Analysis of EC-Diffusion Algorithm for Noise}
+\label{NoiseRob}
+本节将利用仿真数据测试该算法对于噪声数据的鲁棒性。
+
+其中，分别在信噪比为30、20、15、10对算法进行了验证，其中，带噪声的电压型号如\cref{figure:noiseV}所示。
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{noiseV.png}
+    \caption{带噪声的电压分示意图}
+    \label{figure:noiseV}
+\end{figure}
+
+利用上述电压和改进的EC-Diffusion算法，获得了以下重建结果，如\cref{fig:SNR}所示。
+
+
+\newcommand{\subfigg}{
+\begin{subfigure}[b]{0.8\linewidth}
+\centering
+\includegraphics[width=1\textwidth]{SNR30.png}
+\subcaption{信噪比为30时的重建结果}
+\end{subfigure}
+}
+
+\newcommand{\subfiggg}{
+\begin{subfigure}[b]{0.8\linewidth}
+\centering
+\includegraphics[width=1\textwidth]{SNR20.png}
+\subcaption{信噪比为20时的重建结果}
+\end{subfigure}
+}
+
+\newcommand{\subfigggg}{
+\begin{subfigure}[b]{0.8\linewidth}
+\centering
+\includegraphics[width=1\textwidth]{SNR15.png}
+\subcaption{信噪比为15时的重建结果}
+\end{subfigure}
+}
+
+\newcommand{\subfiggggg}{
+\begin{subfigure}[b]{0.8\linewidth}
+\centering
+\includegraphics[width=1\textwidth]{SNR10.png}
+\subcaption{信噪比为10时的重建结果}
+\end{subfigure}
+\label{subfigure:SNR30}
+}
+
+\begin{figure}[H]
+    \subfigg
+    \subfiggg
+    \floatcontinue{tb}
+    \subfigggg
+    \subfiggggg
+    \caption{不同信噪比下的重建结果}
+    \label{fig:SNR}
+\end{figure}
+
+
+可以看出，该算法在不同的信噪比下均可重建出高质量的EIT图像，并能够准确识别出扰动目标的电导率分布。
+故优化后的EC-Diffusion算法对于噪声具有很强的鲁棒性，可有效应用用于脑卒中快速鉴别的EIT图像重建任务中。
 
 \xsubsection{实验结果分析}{Analysis of Reconstructed Image}
 上一节中通过EIT物理模型试验得到了不通电导率的扰动目标的EIT边界电压测量值，本节将利用测量结果以及EC-Diffusion算法重建出其对应的电导率分布图像，
@@ -419,13 +499,7 @@ Diffusion模块用于利用编码后的电压重建出EIT电导率分布（编�
 
 \subsubsection{NoiseG 网络架构优化}
  
-首先，本文优化了NoiseG网络的输入、输出层和损失计算方式，如\cref{figure:NoiseGOPT}所示。
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.95\textwidth]{NoiseGOPT.JPG}
-    \caption{NoiseG优化模型}
-    \label{figure:NoiseGOPT}
-\end{figure}
+
 
 1） 输入层优化
  
@@ -447,101 +521,16 @@ Diffusion模块用于利用编码后的电压重建出EIT电导率分布（编�
  
 首先该模型分别利用训练好的VEncoder分别对$\mbs{v}_p$和$\mbs{v}_s$进行编码，然后经过2个残差卷积层的特征提取，并利用CrossAttention层将编码后的$\mbs{v}_s$嵌入$\mbs{v}_p$中，最后再经过2个残差卷积层输出需要添加的噪声。
  
+由于网络需要对噪声具有一定的抗干扰能力，故增加一项输出，该输出结果表示经过网络去噪后的电压分布。由于编码后的EIT数据维度相同（均为$32\times 32$），故这里可将输出层的通道数改为2。其中一个通道的输出代表原先的噪声隐变量，而新增加的另一个通道的输出则用来代表去噪后的电压分布。
 
+经此优化后，该网络将可有效地生成去噪后的电压分布以及原先的噪声，故还需要对网络的损失计算方式作出修正，
 该生成器与整个NoiseG共享损失，并共同训练，由此便可使该生成器生成适用于特定物理模型试验的噪声项。
  
 2）输出层和算损失函数优化
 
-由于网络需要对噪声具有一定的抗干扰能力，故增加一项输出，该输出结果表示经过网络去噪后的电压分布。由于编码后的EIT数据维度相同（均为$32\times 32$），故这里可将输出层的通道数改为2。其中一个通道的输出代表原先的噪声隐变量，而新增加的另一个通道的输出则用来代表去噪后的电压分布。
-
-经此优化后，该网络将可有效地生成去噪后的电压分布以及原先的噪声，故还需要对网络的损失计算方式作出修正，如\cref{equation:lossNoiseG}。
-\begin{equation}
-    \centering
-    \text{Loss} = \nabla_\theta\|\mbs{v}_{\text{output}} - \mbs{v}_{\text{orignial}}\|^2_2 + \|\nabla_\theta \mbs{\epsilon} - \mbs{\epsilon}_\theta\|^2_2
-    \label{equation:lossNoiseG}
-\end{equation}
 
 
-\xsection{优化后的EC-Diffusion算法性能评估与分析}{Performance Evaluation and Analysis of Optimized EC-Diffusion Algorithm
-}
 
-\xsubsection{优化后的EIT物理模型试验图像重建结果}{Image Reconstruction Results of EIT Physical Model Experiment after Optimization}
-利用优化后的网络对EIT物理模型试验所采集到的电压数据进行重建，如\cref{figure:Reconsresexp}所示：
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=.7\textwidth]{Reconsresexp.PNG}
-    \caption{EIT物理实验结果}
-    \label{figure:Reconsresexp}
-\end{figure}
-改图为2个不同电导率分布（分别为0.05S/m和0.5S/m）的扰动目标分别在饱和硫酸钙溶液中3个不同位置下的电位向量（每个向量包含256个元素）的图像重建结果。
-其中，左图是电导率为0.05S/m的扰动目标的重建结果，右图是电导率为0.5S/m的扰动目标的图像重建结果。
-
-可以看出，优化后的EC-Diffusion算法可以重建出高质量的EIT物理模型实验的电导率分布图像，
-并可有效区分不同电导率分布的扰动目标。同时该算法的时间效率高，满足脑卒中快速鉴别任务的时间性能要求。因此该算法可应用于脑卒中快速鉴别这一任务中。
-
-\xsubsection{优化后EC-Diffusion算法对于噪声的鲁棒性分析}{Robustness Analysis of EC-Diffusion Algorithm for Noise after Optimization}
-由于该模型的改进旨在提高算法的抗噪性能，故本节将利用仿真数据测试该算法对于噪声数据的鲁棒性。
-
-其中，分别在信噪比为30、20、15、10对算法进行了验证，其中，带噪声的电压型号如\cref{figure:noiseV}所示。
-
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{noiseV.png}
-    \caption{带噪声的电压分示意图}
-    \label{figure:noiseV}
-\end{figure}
-
-利用上述电压和改进的EC-Diffusion算法，获得了以下重建结果，如\cref{fig:SNR}所示。
-
-
-\newcommand{\subfigg}{
-\begin{subfigure}[b]{0.8\linewidth}
-\centering
-\includegraphics[width=1\textwidth]{SNR30.png}
-\subcaption{信噪比为30时的重建结果}
-\end{subfigure}
-}
-
-\newcommand{\subfiggg}{
-\begin{subfigure}[b]{0.8\linewidth}
-\centering
-\includegraphics[width=1\textwidth]{SNR20.png}
-\subcaption{信噪比为20时的重建结果}
-\end{subfigure}
-}
-
-\newcommand{\subfigggg}{
-\begin{subfigure}[b]{0.8\linewidth}
-\centering
-\includegraphics[width=1\textwidth]{SNR15.png}
-\subcaption{信噪比为15时的重建结果}
-\end{subfigure}
-}
-
-\newcommand{\subfiggggg}{
-\begin{subfigure}[b]{0.8\linewidth}
-\centering
-\includegraphics[width=1\textwidth]{SNR10.png}
-\subcaption{信噪比为10时的重建结果}
-\end{subfigure}
-\label{subfigure:SNR30}
-}
-
-\begin{figure}[H]
-    \subfigg
-    \subfiggg
-    \floatcontinue{tb}
-    \subfigggg
-    \subfiggggg
-    \caption{不同信噪比下的重建结果}
-    \label{fig:SNR}
-\end{figure}
-
-
-可以看出，该算法在不同的信噪比下均可重建出高质量的EIT图像，并能够准确识别出扰动目标的电导率分布。
-故优化后的EC-Diffusion算法对于噪声具有很强的鲁棒性，可有效应用用于脑卒中快速鉴别的EIT图像重建任务中。
 
 \xsection{小结}{Summary}
 

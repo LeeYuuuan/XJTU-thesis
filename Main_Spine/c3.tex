@@ -531,17 +531,17 @@ $\epsilon_\theta$即为本文所设计的噪声生成网络NoiseG。
 
 \subsubsection{VEncoder模型训练}
 
-该部分用于电压和分布的编码，使得每组电压-电导率之间具有最高的相关性，该思想首先在CLIP中被使用到\cite{CLIP}，
+该部分用于电压分布的编码，使得每组电压-电导率之间具有最高的相关性，该思想首先在CLIP中被使用到\cite{CLIP}，
 用来从自然语言监督中学习视觉模型。该模型的训练方法如\cref{figure:Pretrain}所示：
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=.8\textwidth]{Pretrain.PNG}
-    \caption{数据编码块架构}
+    \caption{VEncoder训练方式}
     \label{figure:Pretrain}
 \end{figure}
-因此该部分还需要实现一个用于对原始电导率分布进行编码的编码器CEncoder。
-则该方法通过VEncoder和CEncoder分别对电压和电导率数据进行编码，随后将每组编码后的向量按一定次序映射到 $\mathbb{R}^d$空间中共$N$组，其中
+该编码器的训练还需要一个用于对原始电导率分布进行编码的编码器CEncoder来辅助。
+该方法通过VEncoder和CEncoder分别对电压和电导率数据进行编码，随后将每组编码后的向量按一定次序映射到 $\mathbb{R}^d$空间中共$N$组，其中
 $d=1024$是编码器编码后的特征数目，$N=32$是每个batch输入到编码器中的电压-电导率数据的个数。即得到图中的$x_1, x_2,...,x_N$以及
 $v_1, v_2,..., v_N$。$x_i,v_i$分别是每一组电压-电导率数据中的电导率分布和电压分布。
 随后，对上述两个集合中的元素按照\cref{equation:coor}方式做内积从而计算其余弦相似度，得到相关性矩阵$\mbs{M_{cv}}= \left(m_{i,j}\right)$
@@ -567,9 +567,9 @@ $v_1, v_2,..., v_N$。$x_i,v_i$分别是每一组电压-电导率数据中的电
     \label{equation:CLIPCrossetp}
     \min \left(loss_c + loss_v\right)
 \end{equation}
-其中, $labels$每个正确分类的标签，分别按照行和列表示对角线元素的下标$1,2,...,N$。
+其中, $labels$是每个正确分类的标签，分别按照行和列表示对角线元素的下标$1,2,...,N$。
 
-而CEncoder的设计如\cref{table:VAE_Conductivity}所示。
+CEncoder的设计如\cref{table:VAE_Conductivity}所示。
 
 
 \begin{table}[H]
@@ -666,13 +666,13 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
         \State 设置需要仿真的扰动目标的电导率分布集合$X = \{0.1, 0.2, 0.3\}$
         
         以及需要仿真的扰动目标大小的区间以及步长$\sigma \in \left[0, 1\right], step = 0.1$
-        \State 设置扰动目标中心需要遍历的待测场域$\Omega = \left[-1, 1\right] \times \left[-1, 1\right]$，
+        \State 设置扰动目标中心需要遍历的待测场域$\Omega = \{ x,y | x^2 + y^2 = 1; x,y \in \left[-1, 1\right]\}$，
 
         以及遍历的步长$step=0.02$
        \For{扰动目标中心坐标$\left(x, y\right)  \in \Omega$ \quad}
        \For{ $x \in X$}
         \State 将该扰动目标映射为场域内部所对应的剖分单元中
-       \If{该扰动目标完全在待测场域内部}
+       \If{$(x,y) \in \Omega$}
        \For{ $\sigma = 0.1, 0.2,...,1$}
         \State 生成一个扰动目标所对应的电导率分布向量
         \State 利用EIT正问题求解器求解出其边界电压分部向量
@@ -693,7 +693,7 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
     \caption{生成的电压-电导率数据集示例}
     \label{figure:cond_voltage}
 \end{figure}
-由于扰动目标大小不同，因此按照上述算法生成的每种类型的电压-电导率数据对的数量不同（扰动目标越大，可遍历的空间就越小），
+由于扰动目标大小不同，因此按照上述算法生成的每种类型的电压-电导率数据对的数量不同（扰动目标越大，可遍历的位置空间就越小），
 其中，相同大小扰动目标的子数据集具有相同的数据量，见\cref{table:countDataset}。
 \begin{table}[h]
   
@@ -716,7 +716,7 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
 
 然后将仿真生成的数据集整合为用于训练CEncoder和VEncoder的数据集，
 其中数据集的大小为152030，将其按照训练集：测试集 $=$ 0.8来划分训练集和测试集，获得训练集大小121624，测试集大小30406。
-即可利用该数据集对数据编码块的训练。经过100次迭代，该网络的最终的训练集损失为0.0486，测试集loss为0.006，损失函数随迭代次数的变化如
+即可利用该数据集对数据编码块的训练。经过100次迭代，该网络最终的训练集损失为0.0486，测试集loss为0.006，损失函数随迭代次数的变化如
 \cref{figure:CLIPLoss}所示，CEncoder和VEncoder网络在100次迭代后可很好的收敛。
 \begin{figure}[h]
     \centering
@@ -735,7 +735,7 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
 
 NoiseG的训练过程如\cref{algorithm:TrainDDPM}所示，
 
-\begin{algorithm}[H]
+\begin{algorithm}[h]
     
     \caption{NoiseG的训练}
     \begin{algorithmic}[1]
@@ -751,7 +751,7 @@ NoiseG的训练过程如\cref{algorithm:TrainDDPM}所示，
     \label{algorithm:TrainDDPM}
 \end{algorithm}
 
-利用上述算法，对NoiseG训练所得到的训练集-测试集loss随迭代次数的变化如\cref{figure:DDPMLoss}所示。
+利用该算法，对NoiseG训练所得到的训练集-测试集loss随迭代次数的变化如\cref{figure:DDPMLoss}所示。
 由于该模型训练开销过大（单次迭代需要3小时左右）故一共进行了20次迭代至其基本收敛，其最终的训练集loss为0.00384，测试集loss为0.00380。
 
 \begin{figure}[H]
@@ -760,6 +760,29 @@ NoiseG的训练过程如\cref{algorithm:TrainDDPM}所示，
     \caption{NoiseG训练-测试Loss曲线}
     \label{figure:DDPMLoss}
 \end{figure}
+
+此外，由于真实的EIT数据往往包含许多噪声，因此本文还设计了一个针对物理模型试验的网络参数训练方式，如\cref{figure:NoiseGOPT}所示。
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.95\textwidth]{NoiseGOPT.JPG}
+    \caption{针对物理模型的NoiseG训练方式}
+    \label{figure:NoiseGOPT}
+\end{figure}
+
+该训练方式利用一个噪声生成器（Noise Generator），向不含噪声的电压向量中加入噪声（图中的Noise Generator），并在输出层中添加一个通道的输出作为电压向量的预测值（图中的$v_{pred}$）。
+随后最小化如\cref{equation:lossNoiseG}所示的联合损失。
+\begin{equation}
+    \centering
+    \text{Loss} = \|\mbs{v}_{\text{output}} - \mbs{v}_{\text{orignial}}\|^2_2 + \lambda\| \mbs{\epsilon} - \mbs{\epsilon}_\theta\|^2_2
+    \label{equation:lossNoiseG}
+\end{equation}
+该式第一项为预测的电压值与原始（不带噪声）的电压值之间的误差，第二项为原先电导率分布中添加的噪声与其预测值之间的误差。
+由此，该训练方式可使得算法对包含噪声的电压数据有更强的鲁棒性。
+
+由于该训练方式需要物理模型试验数据的参与，故其训练过程以及用于生成向电压数据中添加的噪声的生成器详见\cref{NoiseRob}。
+
+
 
 \subsubsection{CDecoder模型训练}
 
