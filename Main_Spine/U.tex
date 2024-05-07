@@ -157,3 +157,35 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
     \caption{信噪比为10时的重建结果}
     \label{figure:SNR30}
 \end{figure}
+
+
+
+
+
+此模块由一个编码器构成，用于对EIT边界电压数据进行编码。由于电压向量的表示方式不同，而神经网络对于输入向量的维度敏感度极高，因此此部分首先将输入的电压向量（或矩阵）映射为一维行向量，其长度为$d_m$。
+由于VEncoder用于编码边界电压数据，因此要求此编码器能实现对电压分布的深层次特征进行提取，从而更好地捕获其特征与电导率分布之间的关系。
+基于上述目的，本文采用残差卷积模块为主体设计了一个编码器，其具体结构如\cref{table:VAE_Voltage}所示。
+\begin{table}[H]
+    \centering
+    \caption{VEncoder编码器架构}
+    \label{table:VAE_Voltage}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    层数 & 输入 & 网络类型  & 输出\\
+    \midrule
+    1 & $input$ & Linear $\times 5$ & $v_1=\text{Linear}(input)$, $residue_1=input$  \\
+    2 & $v_1$ & LayerNorm & $v_2=\text{LayerNorm}(v_1)$ \\
+    3 & $v_2, residue_1$ & SelfAttention & $v_3 = \text{SelfAttention}(v_2) + residue_1, residue_2 = v_2$\\
+    4 & $v_3$ & Linear $\times 5$& $v_4 = \text{Linear}(v_3)$ \\
+    5 & $v_4$ & QuickGELU & $v_5 = \text{QuickGELU}(v_4)$ \\
+    6 & $v_5, residue_2$ & Linear & $v_6 = \text{Linear}(v_5) + residue_2$\\
+    7 & $output$ & Linear & $output = \text{Linear}(v_6)$\\
+    \bottomrule
+    \end{tblr}
+\end{table}
+
+\cref{table:VAE_Voltage}中，每一行依次代表该网络中的每一层；第一列（层数）代表当前的层数，第二列（输入）和第四列（输出）
+分别表示改层输入的变量和输出的变量，第三列（网络类型）代表主要构成该层的网络类型。
+其中，第1、4、6、7为多层感知机，而$residue_1, residue_2$分别为残差项，用于实现残差结构，进一步加快网络收敛并防止梯度消失。

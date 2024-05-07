@@ -289,57 +289,17 @@ EIT逆问题的求解往往通过迭代的思想，根据每一步正问题求�
 \xsubsection{全连接神经网络}{Fully Connected Neural Networks}
 全连接神经网络(Fully Connected Neural Networks, FCN)，也被称为人工神经元网络（Artificial Neural Network，ANN）,多层感知机(Multilayer Perceptron，MLP)。
 该思想源于仿生学，其中树突对应MLP的输入层，轴突和轴突未梢对应其隐藏层和输出层。
-FCN是深度学习模型中最基础的结构。一个三层的MLP包含了其模型如\cref{figure:FCN}所示，每层神经元本质上代表一组权重矩阵，用来对输入层的数据做线性变换（或仿射变换），进而输出至下一层。
+FCN是深度学习模型中最基础的结构，每层神经元本质上代表一组权重矩阵，用来对输入层的数据做线性变换（或仿射变换），进而输出至下一层。
 通常，输出层的数据会通过一个激活函数后输出最终结果。每层神经元的输出是下一层所有神经元的输入，故名“全连接”。
 全连接网络有对非线性映射强大的拟合能力，故可以用来学习各种非线性映射。然而，随着神经网络层数的增加，其训练和推理过程由于网络参数规模庞大而往往更加耗时。
 同时，全连接网络的输入通常为向量，因此会忽略掉二维或高维数据的空间特征。因此，当前主流的深度学习模型通常不以FCN作为主要模型架构，取而代之的是卷积神经网络等，以更好地适应复杂的任务和高维的数据。
 FCN更多地是用作一个模型的一小部分。
-\begin{figure}[H]
-  \usetikzlibrary{positioning}
-  
 
-  \begin{tikzpicture}[x=1.5cm, y=1.5cm, >=stealth]
-  
-  % 输入层
-  \foreach \m/\l [count=\y] in {1,2,3}
-      \node [circle,draw,fill=gray!20,minimum size=0.75cm] (input-\m) at (0,2.5-\y) {$x_\l$};
-  
-  % 隐藏层
-  \foreach \m [count=\y] in {1,2,3}
-      \node [circle,draw,fill=gray!50,minimum size=0.75cm] (hidden1-\m) at (2,2.5-\y) {$h_\m^{(1)}$};
-  \foreach \m [count=\y] in {1,2,3}
-      \node [circle,draw,fill=gray!50,minimum size=0.75cm] (hidden2-\m) at (4,2.5-\y) {$h_\m^{(2)}$};
-  
-  % 输出层
-  \foreach \m [count=\y] in {1,2,3}
-      \node [circle,draw,fill=gray!20,minimum size=0.75cm] (output-\m) at (6,2.5-\y) {$y_\m$};
-  
-  % 连接
-  \foreach \m in {1,...,3}
-      \foreach \n in {1,...,3}
-          \draw [->] (input-\m) -- (hidden1-\n);
-  \foreach \m in {1,...,3}
-      \foreach \n in {1,...,3}
-          \draw [->] (hidden1-\m) -- (hidden2-\n);
-  \foreach \m in {1,...,3}
-      \foreach \n in {1,...,3}
-          \draw [->] (hidden2-\m) -- (output-\n);
-  
-  \end{tikzpicture}
-  \caption{全连接神经网络}
-  \label{figure:FCN}
-\end{figure}
 
 \xsubsection{卷积神经网络}{Convolutional Neural Networks}
 卷积神经网络(Convolutional Neural Networks, CNN)是目前使用范围最广的深度学习模型之一，由其对高维数据的空间特征提取能力的优异表现而广泛应用于图像处理和计算机视觉任务中。
-一般的CNN通常包含卷积层，池化层，全连接层。其常见的模型结构如\cref{figure:CNN}所示。
+一般的CNN通常包含卷积层，池化层，全连接层。
 
-\begin{figure}[h]
-  \centering
-\includegraphics[width=0.6\textwidth]{CNN.JPG}
-\caption{卷积神经网络结构示意}
-\label{figure:CNN}
-\end{figure}
 
 卷积层通常利用卷积操作提取图像（或其他输入数据）的空间特征信息。CNN每一层通常具有多个通道（包含多个卷积核），每个卷积核分别与图像进行卷积运算，其的结果将会作为下一层的输入；不同的卷积核可以提取到图像不同类型的空间特征，因此CNN通常相较于FCN有更强大的特征提取能力。
 池化层通常用于减小图像尺寸，同时可以保留输入结果中重要的特征信息。常见的池化操作通常有平均值池化(Average Pool)、最大值池化(Max Pool)等。

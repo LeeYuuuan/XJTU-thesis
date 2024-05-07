@@ -1,9 +1,9 @@
 % !TeX root = ../main.tex
 
-\xchapter{生成式EIT图像重建算法的设计与实现}{Design and Implementation of Generative EIT Reconstruction Algorithm }
+\xchapter{生成式EIT图像重建算法的设计与实现}{Design and Implementation of Generative EIT Reconstruction Algorithm}
 传统的EIT图像重建算法通常利用迭代的思想多次求解EIT正问题、逆问题，以不断最小化每一步求解的电压分布和真实电压分布之间的误差。
 这种做法通常消耗时间长，成像分辨率低。由于EIT正问题仿真模型完备，且相对精确，而常见的深度学习模型则需要大量的训练数据，
-因此基于深度学习的EIT图像重建模型大大提高了EIT图像重建算法的重建分辨率。
+因此基于深度学习的EIT图像重建模型大大提高了EIT图像重建算法的图像重建分辨率。
 并且由于训练好的深度学习模型正向推理的过程通常耗时较少，因而能显著提高图像重建算法的时间效率。
 这也为EIT技术实现床旁实时监测、院前疾病检测提供了技术保障。
 
@@ -13,8 +13,8 @@
 
 扩散概率模型，作为生成式模型的一种，近年来在图像生成领域已经取得了显著的成果。而EIT图像重建问题本质上是建立从电压分布到电导率分布的非线性映射，
 即可以看作是生成目标为电导率分布，且指导模型生成电导率分布的条件为电压分布的带条件的扩散概率模型。
-利用扩散模型实现的EIT图像重建算法由于其模型固有的优势而能更好的电导率的原始分布。并且通过对推断过程的改进，可
-以有效减少在推理过程中的采样次数，极大程度的缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
+利用扩散模型实现的EIT图像重建算法由于其模型固有的优势而能更好地拟合电导率的原始概率分布。并且通过对扩散过程的改进，可
+以有效减少在推理过程中的采样次数，极大程度地缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
 
 本章将提出一个生成式EIT图像重建算法，并重点介绍其设计理念与实现过程。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
 模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
@@ -24,12 +24,12 @@
 
 
 EIT图像重建算法就是要利用场域边界电压-电流数据重构出其内部电导率分布。
-但是，电流的激励方式，电压信号的维度等都会影响到EIT图像重建算法的设计，并且同一类型的数据也包含多种表示方式（如电压可表示为矩阵形式和向量形式）。
+但是，电流的激励方式、电压信号的维度等都会影响到EIT图像重建算法的设计，并且同一类型的数据也包含多种表示方式（如电压可表示为矩阵形式和向量形式）。
 因此本节首先定性和定量地描述EIT图像重建问题，随后将提出一个生成式EIT图像重建算法。
 
 \xsubsection{EIT图像重建问题分析}{Analysis of EIT Image Reconstruction Problem}
 
-设待如\cref{figure:xyz}所示的测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
+设如\cref{figure:xyz}所示的待测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
 EIT采集系统的激励模式为邻近激励，单次测量所有激励模式所构成的集合为$S_{stim}$，单次测量电流激励的次数为$n_m$；测量电压的模式为邻近差分，单次激励测量电压的维度为$d_{vm}$。
 则单次测量的电压向量维度为$d_m = d_{vm} * n_m$。（关于EIT的有限元模型和测量模式详见\cref{PrincipleEIT}）。
 利用上述测量模式，可获得EIT测量电压分布。EIT的测量电压共包括两个部分，分别为背景帧的边界电压以及含扰动目标的边界电压。
@@ -72,7 +72,7 @@ EIT重建的图像分辨率为$res_{row} \times res_{column}$。
 
 \xsubsection{生成式EIT图像重建算法总述}{Overall of of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
 
-根据上一节的EIT图像重建问题，本节提出了一个用于脑卒中快速鉴别的生成式EIT图像重建算法，
+根据上一节所提出的EIT图像重建问题，本节提出了一个用于脑卒中快速鉴别的生成式EIT图像重建算法，
 由于其应用EC-Diffusion模型实现而命名为EC-Diffusion算法如\cref{algorithm:GeneAlgorithm}和\cref{figure:AlgorithmEIT}。
 \begin{figure}[h]
     \centering
@@ -90,7 +90,7 @@ EIT重建的图像分辨率为$res_{row} \times res_{column}$。
         \State 计算边界电压差向量$\Delta v_{vector} = v_{vector - v_{0vector}}$
         \State 获得训练好的EC-Diffusion 模型 $\text{EC-Diffusion}(\cdot)$
         \State \textbf{Input:} $\Delta v_{vecotr}$
-        \State \textbf{Output:} $ \text{reconsturcted conductivity}  = \text{EC-Diffusion}(\Delta v_{vecotr})$
+        \State \textbf{Output:} $ \sigma  = \text{EC-Diffusion}(\Delta v_{vecotr})$
     \end{algorithmic}
     \label{algorithm:GeneAlgorithm}
 \end{algorithm}
@@ -99,27 +99,27 @@ EIT重建的图像分辨率为$res_{row} \times res_{column}$。
 
 1）设计并实现用于EIT图像重建任务的模型。该阶段使用改进的扩散模型作为EIT图像重建算法的核心模块，因此还需要对原始的
 电压数据进行处理，故该阶段采用了一个编码器-解码器结构分别对重建前的电压数据进行编码（预处理）以及对重建后的电导率分布进行解码（后处理）。
-由于该算法利用Diffusion Model通过编码后的电压分布重建出编码后的电导率分布，故将其命名为EC-Diffusion（Encoded Diffusion）。
+由于该模型利用Diffusion Model通过编码后的电压分布重建出编码后的电导率分布，故将其命名为EC-Diffusion（Encoded Diffusion）。
 
 2）模型训练。这一阶段会使用仿真软件仿真出用于训练模型所需要的EIT数据，并利用这些数据训练模型至收敛。
 
 3）模型评估。将用于测试网络性能的数据输入至训练好的模型，并根据其重建出的图像以及其他参数评估模型性能并优化模型。
 
-上述阶段利用EIT数据使EIT图像重建模型学习到最优的参数，以尽可能的拟合EIT电压-电导率分布。
+上述阶段利用EIT数据使EC-Diffusion模型学习到最优的参数，以尽可能地拟合EIT电压-电导率分布。
 当以上阶段完成后，便可利用\cref{algorithm:GeneAlgorithm}解决EIT图像重建问题。即，
-将EIT边界差分电压数据输入至训练好的模型中，经过模型正向推理即可得到其内部的电导率分布图像。
+将EIT边界差分电压数据输入至训练好的模型中，经过模型正向推理即可得到其内部电导率分布的图像。
 
 
 \xsection{EC-Diffusion模型的设计与实现}{Design and Implementation of the EC-Diffusion Model}
 
-EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心阶段，故本节将首先介绍该模型的总体架构，
+EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心部分，故本节将首先介绍该模型的总体架构，
 随后将分别对该模型中电压编码块、图像重建块和图像后处理块的设计与实现展开详细的介绍。
 
 \xsubsection{模型的总体架构}{Overall of the Model Architecture}
 \label{section:Model}
 
 针对EIT图像重建问题中的非线性映射，
-本文提出了一个利用编码器-解码器以及一个基于改进扩散模型的深度生成式EIT图像重建模型：EC-Diffusion\cref{figure:EITREmodel}所示，
+本文提出了一个利用编码器-解码器以及一个基于改进扩散模型的深度生成式EIT图像重建模型：EC-Diffusion，如\cref{figure:EITREmodel}所示，
 
 \begin{figure}[h]
     \centering
@@ -127,13 +127,13 @@ EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心阶�
     \caption{EC-Diffusion 模型}
     \label{figure:EITREmodel}
 \end{figure}
-共包括三个模块，分别是：
+该模型共包括三个模块，分别是：
 
-1）电压编码块（Voltage Encoding Block）：由一个电压编码器（Voltage Encoder, VEncoder）构成。用于对电压数据进行编码，以输出适应图像重建模块的输入维度。
+1）电压编码块（Voltage Encoding Block）：由一个电压编码器（Voltage Encoder, VEncoder）构成。用于对电压数据进行编码，以输出适应图像重建块的输入维度。
 
-2）图像重建块（Diffusion-based Reconsturction）。该部分利用改进的扩散概率模型拟合EIT图像重建映射，输出编码后的电导率分布。该模块是本算法的核心部分。
+2）图像重建块（即基于扩散模型的图像重建快，Diffusion-Based Reconsturction）。该部分利用改进的扩散概率模型拟合EIT图像重建问题中的非线性映射，输出编码后的电导率分布。该模块是本算法的核心部分。
 
-3）图像后处理块（即电导率解码块，Conductivity Decoding Block）。由一个电导率解码器（Conductivity Decoder, CDecoder）构成。用于解码图像重建块的生成结果，将生成结果映射到用于引导图像的电导率分布所适应的维度。
+3）图像后处理块（即电导率解码块，Conductivity Decoding Block）。由一个电导率解码器（Conductivity Decoder, CDecoder）构成。用于解码图像重建块的生成结果，将生成结果映射到用于引导EIT图像的电导率分布。
 
 则该模型将首先利用VEncoder对EIT电压数据进行编码，随后将编码后的电压输入到图像重建块中，获得图像重建结果。需要注意的是，
 该图像重建块重建出的结果同样为编码后的图像，因此还需要利用一个CDecoder对编码后的图像进行解码，解码后的结果即为该模型重建后的EIT图像。
@@ -144,35 +144,39 @@ EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心阶�
 \xsubsection{电压编码块}{Voltage Encoding Block}
 
 
-此模块由一个编码器构成，用于对EIT边界电压数据进行编码。由于电压向量的表示方式不同，而神经网络对于输入向量的维度敏感度极高，因此此部分首先将输入的电压向量（或矩阵）映射为一维行向量，其长度为$d_m$。
-由于VEncoder用于编码边界电压数据，因此要求此编码器能实现对电压分布的深层次特征进行提取，从而更好地捕获其特征与电导率分布之间的关系。
-基于上述目的，本文采用残差卷积模块为主体设计了一个编码器，其具体结构如\cref{table:VAE_Voltage}所示。
-\begin{table}[H]
+VEncoder的编码目标是使得编码后的结果尽可能表达出更强有关于该电压数据所对应的电导率分布的特征，
+而CNN对于高维数据的空间特征提取能力具有显著的优势，同时，CNN也相较于MLP而言具有更少的可学习参数。因此，此节以CNN为主体，利用径向基函数神经网络（Radial Basis Function Neural Network, RBFNN）
+实现了一个RBF-CNN结构的编码器，其结构如\cref{figure:RBFCNN}所示。
+\begin{figure}[h]
     \centering
+    \includegraphics[width=.9\textwidth]{RBFCNN.png}
     \caption{VEncoder编码器架构}
-    \label{table:VAE_Voltage}
-    \begin{tblr}{
-        colspec = {X[c] X[c] X[c]},
-    }
-    \toprule
-    层数 & 输入 & 网络类型  & 输出\\
-    \midrule
-    1 & $input$ & Linear $\times 5$ & $v_1=\text{Linear}(input)$, $residue_1=input$  \\
-    2 & $v_1$ & LayerNorm & $v_2=\text{LayerNorm}(v_1)$ \\
-    3 & $v_2, residue_1$ & SelfAttention & $v_3 = \text{SelfAttention}(v_2) + residue_1, residue_2 = v_2$\\
-    4 & $v_3$ & Linear $\times 5$& $v_4 = \text{Linear}(v_3)$ \\
-    5 & $v_4$ & QuickGELU & $v_5 = \text{QuickGELU}(v_4)$ \\
-    6 & $v_5, residue_2$ & Linear & $v_6 = \text{Linear}(v_5) + residue_2$\\
-    7 & $output$ & Linear & $output = \text{Linear}(v_6)$\\
-    \bottomrule
-    \end{tblr}
-\end{table}
+    \label{figure:RBFCNN}
+\end{figure}
 
-\cref{table:VAE_Voltage}中，每一行依次代表该网络中的每一层；第一列（层数）代表当前的层数，第二列（输入）和第四列（输出）
-分别表示改层输入的变量和输出的变量，第三列（网络类型）代表主要构成该层的网络类型。
-其中，第1、4、6、7为多层感知机，而$residue_1, residue_2$分别为残差项，用于实现残差结构，进一步加快网络收敛并防止梯度消失。
+其中，Conv3$\times$3为卷积层，卷积核大小为3$\times$3；Max pool 为最大池化层；Average pool为平均值池化层。
 
-该编码器中最值得关注的部分是第3层，即SelfAttention层。该层由一个LayerNorm层 和一个SelfAttention模块和组合而成。
+RBF则为RBFNN层，
+与 MLP 不同，RBFNN 使用欧几里德距离和高斯激活函数，这使得神经元对局部信息更加敏感。 
+RBF 网络具有与 MLP 类似的输入层和输出层。
+不同的是，隐藏层中的每个神经元都有一个原型向量和一个由 $\mu$ 和 $sigma$ 表示的带宽分别计算输入向量与其原型向量之间的相似度，如\cref{equation:RBFNN}所示。
+\begin{equation}
+    \label{equation:RBFNN}
+    y(x) = f(z(x)) = \sum_{i=1}^{m} v_i \phi_i(z(x)) + b
+\end{equation}
+其中：
+\begin{equation}
+    \phi_i(z(x)) = \exp\left(-\frac{|x - \mu_i|^2}{2\sigma_i^2}\right)
+\end{equation}
+
+$y(x)$ 是 RBFNN 的输出；
+$f(\cdot)$ 是输出层的激活函数；$z(x)$ 是隐含层的输出；
+$\phi_i(z(x))$ 是隐含层神经元 $i$ 的激活函数；
+$v_i$ 是连接隐含层和输出层的权重；
+$b$ 是偏置项；
+$m$ 是隐含层神经元的数量。
+
+SelfAttention层为自注意力机制层，由一个LayerNorm层 和一个SelfAttention模块和组合而成。
 如\cref{figure:Selfatt}所示。
 \begin{figure}[h]
     \centering
@@ -181,21 +185,22 @@ EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心阶�
     \label{figure:Selfatt}
 \end{figure}
 
-注意力机制(Attention)是由 Bahdanau等人于2014年提出的\cite{2014Neural}，最初应用于自然语言处理领域，此后由于其性能优秀而广泛应用在各个领域。
-attention机制让神经网络能够关注输入数据的某些相关的信息，而减少对无用信息的关注。这种思想源于人们的视觉系统，即人们在看到一张图片或视频时通常会关注其中感兴趣的部分。
+注意力机制(Attention)是由 Bahdanau等人于2014年提出的\cite{2014Neural}，最初应用于自然语言处理领域，此后由于其性能优异而广泛应用在各个领域。
+注意力机制让神经网络能够关注输入数据的某些相关的信息，而减少对无用信息的关注。这种思想源于人们的视觉系统，即人们在看到一张图片或视频时通常会关注其中感兴趣的部分。
 
-attention通常包含三个重要的部分，即：
+Attention通常包含三个重要的部分，即：
 
   1） 查询矩阵（query, Q）： 其中的值代表模型应该更加关注输入数据中的某些部分，即Q作为输入向量的某种表示，可以反映模型更加需要关注的内容。
   
   2） 键（key, K）：表示输入向量的特征。
+
   3） 值（values, V）：是K对应输入向量的另一维度的特征，用于和QK所获得的的相似度进行加权和。
 
 
-其基本原理为：首先计算出Q和K的相似度，然后利用Softmax进行归一化算出每个元素所对应各权重，最后利用上一步计算的结果与V中的元素做加权和，以输出最终的结果。
-其中，由于相似度计算方式的不同以及Q、K、V选择方式的不同，就产生了attention的各种应用以及变体，包括自注意力机制（Self-attention），交叉注意力机制（Cross-attention）等。
+其基本原理为：首先计算出Q和K的相似度，然后利用Softmax进行归一化算出每个元素所对应的权重，最后利用上一步计算的结果与V中的元素做加权和，以输出最终的结果。
+其中，由于相似度计算方式的不同以及Q、K、V选择方式的不同，就产生了Attention的各种应用以及变体，包括自注意力机制（Self-Attention），交叉注意力机制（Cross-Attention）等。
 
-Self-attention层是注意力机制的一种应用，其具体的计算过程如\cref{algorithm:Self_attention}。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
+SelfAttention层是注意力机制的一种应用，其具体的计算过程如\cref{algorithm:Self_attention}。该机制允许模型在处理电导率分布时专注于数据的某些部分（如扰动目标的部分），而忽略其他部分（即背景帧）。
 该模块可以使得电导率分布在不同的位置之间保持联系，以实现对扰动部分更好地成像。
 
 \begin{algorithm}
@@ -219,7 +224,7 @@ Self-attention层是注意力机制的一种应用，其具体的计算过程如
 而Self Attention机制通过计算一组数据内部的相关性并对每个元素重新赋上加权和，可以有效的关注其输入数据的特定部分。因此在此处引入Self Attention层将一定程度上提高扰动目标区域对电压分布或电导率分布中相关部分的关注程度，
 进而可以有效地提高网络对EIT非线性映射的拟合能力。
 
-VEncoder中的第2层为归一化层，用于对上一层的输出归一化，采用层归一化策略（Layer Normalization, LN）。
+LN层为层归一化层（Layer Normalization, LN），用于对上一层的输出归一化。
 LN对该次输入所有通道的所有元素进行归一化（计算所有输入的均值和方差），然后利用\cref{equation:norm}对其进行更新。
 \begin{equation}
   \label{equation:norm}
@@ -231,7 +236,7 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
 由于该层在运算的过程中不受到batch size的限制，故可以有效应用在小批次的样本中。此外，该方法可看作是组归一化中组数为1的特殊情况。
 
 
-此外，该编码器中的第5层为激活函数层，利用GELU作为激活函数。在对GELU实现时，本文采用如\cref{equation:quickGeLU}所示的函数对GeLU作近似估计：
+此外，该编码器中的GELU层为激活函数层，利用GELU作为激活函数。在对GELU实现时，本文采用如\cref{equation:quickGeLU}所示的函数对GeLU作近似估计：
   \begin{equation}
     \label{equation:quickGeLU}
     \text{quickGELU}(x) = \frac{1}{2}x\left(1 + \tanh\left(\sqrt{\frac{2}{\pi}}\left(x + 0.044715x^3\right)\right)\right)
@@ -242,10 +247,6 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
 \
   \end{equation}
 由于GELU本身运算复杂，因此该做法可有效提高网络的运算效率。
-
-
-
-
 
 
 \xsubsection{图像重建块}{Image Reconstruction Block}
@@ -264,28 +265,24 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
 
 对于EIT图像重建过程，本文建立了如下的扩散模型：
 
-假设假设原始的电导率分布为$\mbs{x}_0$，原始电导率分布分布模型$p_\theta(\mbs{x}_0) \coloneqq \int p_\theta(\mbs{x}_{0:T})\diff x_{1:T}$。
-
-
-则扩散过程（Diffusion Process）和逆扩散过程（Reverse Process）可描述为如下方式：
+假设假设原始的电导率分布为$\mbs{x}_0$，原始电导率分布分布模型可以表述为
+$p_\theta(\mbs{x}_0) \coloneqq \int p_\theta(\mbs{x}_{0:T})\diff x_{1:T}$。则扩散过程（Diffusion Process）和逆扩散过程（Reverse Process）可描述为如下方式：
 
 \subsubsection{扩散过程}
 
 扩散过程，也被称为正向过程（Forward Process），如\cref{figure:dp}。通过向原始的电导率分布中不断加入已知的高斯噪声，
-随着噪声的不断增加该数据将趋近于一个高斯分布。
+随着噪声的不断增加该数据分布将趋近于一个高斯分布。
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.9\textwidth]{DP.jpg}
+    \includegraphics[width=.95\textwidth]{DP.jpg}
     \caption{正向过程}
     \label{figure:dp}
 \end{figure}
 
-该过程根据一个方差序列（Variance Schedule）$\beta_1, ...\beta_T$，向电导率分布中逐渐添加高斯噪声。
+该过程通过一个用一个控制噪声与信号混合比例的方差序列（Variance Schedule）$\beta_1, ...\beta_T$，向电导率分布中逐渐添加高斯噪声。满足$\beta_1 < \beta_2 <...<\beta_T$。
 
-$\beta_t$是方差序列（variance schedue）用来控制噪声与信号混合的比例，满足$\beta_1 < \beta_2 <...<\beta_T$。
-
-由于马尔科夫链中第$t$步的$\mbs{x}_{t}$只与$t_1$时刻的$\mbs{x}_{t-1}$有关，故可得给定原始电导率分布$\mbs{x}_0$时近似后验$q(\mbs{x}_{1:T}|\mbs{x}_0)$为：
+由于马尔科夫链中第$t$步的$\mbs{x}_{t}$只与$t-1$时刻的$\mbs{x}_{t-1}$有关，故可得给定原始电导率分布$\mbs{x}_0$时近似后验$q(\mbs{x}_{1:T}|\mbs{x}_0)$为：
 \begin{equation}
     \centering
     q(\mbs{x}_{1:T}|\mbs{x}_0) = \prod_{t=1}^{T} q(\mbs{x}_{t}|\mbs{x_{t-1}}) \qquad
@@ -293,7 +290,7 @@ $\beta_t$是方差序列（variance schedue）用来控制噪声与信号混合�
     \label{equation:ddpm_f}
   \end{equation}
 
-其中，$t$为时间轴，通常定义为$[0,1,2,...,1000]$（线性，也可以为cosine等）。
+其中，$t$为时间轴（线性），定义为$[0,1,2,...,1000]$。
 $\mbs{x}_1, \mbs{x}_2,..,\mbs{x}_{t}$，$t=1:T$是第$t$步加噪声后的结果。如此可保证$\mbs{x}_{t}$在$t$时刻有较小的信噪比，
 即近似后验$q(\mbs{x}_{T}|\mbs{x}_0)$接近于一个同维度的标准正态分布。
 
@@ -310,7 +307,7 @@ $\mbs{x}_1, \mbs{x}_2,..,\mbs{x}_{t}$，$t=1:T$是第$t$步加噪声后的结果
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.9\textwidth]{revs.jpg}
+    \includegraphics[width=.95\textwidth]{revs.jpg}
     \caption{逆扩散过程}
     \label{figure:revs}
 \end{figure}
@@ -328,15 +325,16 @@ $\mbs{x}_1, \mbs{x}_2,..,\mbs{x}_{t}$，$t=1:T$是第$t$步加噪声后的结果
 其中，$\mu_\theta(\mbs{x}_{t}, t, \mbs{v})$和$\Sigma_\theta(\mbs{x}_{t}, t, \mbs{v})$分别为$p_\theta(\mbs{x}_{t-1}|\mbs{x}_{t})$
 的均值和方差。
 
-由此可以看出，只要可获得$\mu_\theta(\mbs{x}_{t}, t, \mbs{v})$和$\Sigma_\theta(\mbs{x}_{t}, t, \mbs{v})$，就可以根据上述马尔科夫链求解出
+由此可以看出，只要获得$\mu_\theta(\mbs{x}_{t}, t, \mbs{v})$和$\Sigma_\theta(\mbs{x}_{t}, t, \mbs{v})$，就可以根据上述马尔科夫链求解出
 原始的电导率分布。
 
-在上式中，均值
+在上式中，经推导可得，均值
 \begin{equation}
   \mu_\theta = \frac{1}{\sqrt{\alpha_t}}(\mbs{x}_{t} - \frac{\beta_t}{\sqrt{1-\hat{\alpha_t}}}\epsilon_\theta(\mbs{x}_{t}, t, v))  
 \end{equation}
-进一步可以看出，只需要得到从$t$时刻到$t-1$时刻需要去掉的噪声$\epsilon_\theta(\mbs{x}_{t}, t, v)$，
-即可递推地重建出$t=0$时刻的原始电导率分布$\mbs{x}_0$。故只需要利用神经网络拟合出所需要添加的噪声网络即可推断出原始的数据点。
+而方差则可由方差序列得到。
+则进一步可以看出，只需要得到从$t$时刻到$t-1$时刻需要去掉的噪声$\epsilon_\theta(\mbs{x}_{t}, t, v)$，
+即可递推地重建出$t=0$时刻的原始电导率分布$\mbs{x}_0$。故只需要利用神经网络拟合出所需要添加噪声的网络即可推理出原始的数据分布。
 
 \subsubsection{图像重建块的实现}
 
@@ -352,22 +350,22 @@ $\mbs{x}_1, \mbs{x}_2,..,\mbs{x}_{t}$，$t=1:T$是第$t$步加噪声后的结果
 \end{figure}
 
 在推理阶段时，首先随机生成一个大小为$32\times 32$的高斯噪声（与电导率分布编码后的大小相同）作为$t$时刻的隐变量$\mbs{x}_{t}$，
-然后通过向训练好的生成噪声网络NoiseG，即$\epsilon_\theta$，输入该时刻的隐变量$x_t$、当前时刻$t$以及经过上一节中电压编码器VEncoder编码后的电压向量$\mbs{v}$，
-输入上一时刻的隐变量$\mbs{x}_{t-1}$，经过不断迭代最终输出该电压分布作为边界条件所对应的电导率分布的编码后的结果。
+然后通过向训练好的NoiseG中输入该时刻的隐变量$\mbs{x}_t$、当前时刻$t$以及经过上一节中电压编码器VEncoder编码后的电压向量$\mbs{v}$，
+输出上一时刻的隐变量$\mbs{x}_{t-1}$，经过不断迭代最终输出该电压分布作为边界条件所对应的电导率分布（编码后）。
 
-以下将重点介绍NoiseG的实现方式。该网络以U-net作为基本结构，如\cref{figure:Unet}所示。U-net是由Olaf Ronneberger等人于2015年提出的基于CNN的深度学习模型\cite{2015U}，该网络在医学图像分割领域取得了优异的表现，
+NoiseG网络以U-net作为基本结构，如\cref{figure:Unet}所示。U-net是由Olaf Ronneberger等人于2015年提出的基于CNN的深度学习模型\cite{2015U}，该网络在医学图像分割领域取得了优异的表现，
 此后该网络被广泛应用在各个领域，包括DDPM的去噪网络中\cite{DDPM}，该网络是一个典型的编码器-解码器结构，由一个编码器和一个解码器组成，
 其中，编码器将输入信号映射到隐空间中，解码器对隐空间中的数据进行解码，进而获得想要的结果。
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\textwidth]{Unet.png}
+    \includegraphics[width=1\textwidth]{Unet.png}
     \caption{NoiseG网络架构}
     \label{figure:Unet}
 \end{figure}
 
 该网络以残差卷积块（ResidualBlock）为主要结构（即图中蓝色箭头所表示的运算），
-该模块不仅包上一层的输出$x$，还包含了时刻信息$t$，且同样利用了残差连接的方式如\cref{table:Unet}所示。
+该模块不仅包上一层的输出$x$，还包含了时刻信息$t$，如\cref{table:Unet}所示。
 
 \begin{table}[h]
     \centering
@@ -396,15 +394,17 @@ SiLU为激活函数，用于向网络中添加非线性成分。
 
 
 除此之外，由于原始DDPM中的去噪网络的输入仅为隐变量$\mbs{x}_{t}$以及时刻$t$，EIT问题中电导率分布的生成却需要施加一定的边界条件（即电压-电流信号），
-因此适用于EIT图像重建算法的U-net加噪声网络还需要利用边界条件引导噪声的生成，即在网络的输入层添加电压信号的输入。交叉注意力机制（Cross Attention） 作为一种
-注意力机制最常见的变体之一，其利用计算相关性并利用相关性计算加权和的方式，有效地捕捉输入序列之间的相关性，从而很擅长处理如机器翻译等序列到序列的任务。
-故本将采用Cross-Attention机制将电压信号嵌入到输入到U-net中，具体而言，通过多个交叉注意力块（Cross Attention Block） 多次将电压信号引入到整个网络对电导率分布的拟合过程中。
+因此适用于EIT图像重建算法的U-net加噪声网络还需要利用边界条件引导噪声的生成，即在网络的输入层添加电压信号的输入。
 
-本算法所使用到的U-net 中包含了一个Cross Attention layer，其具体结构如\cref{table:CrossAttention}所示。
+交叉注意力机制（Cross Attention） 作为一种
+注意力机制最常见的变体之一，其通过计算相关性并利用相关性计算加权和的方式，有效地捕捉输入序列之间的相关性，从而很擅长处理如机器翻译等序列到序列的任务。
+故本将采用Cross-Attention机制将电压信号嵌入到输入到U-net中，具体而言，通过多个交叉注意力块（Cross Attention Block） 多次将电压信号引入到整个网络的运算中。
+
+本算法所使用到的交叉注意力块（Cross Attention Block）结构如\cref{table:CrossAttention}所示。
 
 \begin{table}[h]
     \centering
-    \caption{Cross-Attention block}
+    \caption{Cross Attention block}
     \label{table:CrossAttention}
     \begin{tblr}{
         colspec = {X[c, 0.5] X[c] X[c] X[c, 3.2]},
@@ -428,7 +428,7 @@ SiLU为激活函数，用于向网络中添加非线性成分。
 其中，$residue_2, residue_3, residue_4$分别为短期的残差连接，$residue_1$最长的残差连接，用于防止梯度消失，提高网络性能。
 Conv2d是卷积核大小为$3\times 3$的卷积层， GroupNorm 和LayerNorm分别是组归一化（Group Norm, GN）和层归一化层，GN将通道划分成若干个组，进而每个组分别进行归一化。GN通常选择固定的组数（本文大量使用到GN，其中归一化组数选择为32），
 从而使得归一化的过程不受到batch size的限制，可以有效应用在小批次的样本中。SelfAttention层为自注意力块。
-GeLU为激活函数，用使网络具有非线性成分。
+GeLU为激活函数，用于向网络中添加非线性成分。
 
 CrossAttention层则利用Cross Attention机制将电压信号嵌入网络的数据流中，其具体实现方式如下：
 
@@ -449,10 +449,11 @@ CrossAttention层则利用Cross Attention机制将电压信号嵌入网络的数
 \end{algorithm}
 
 其中，与Self-Attention不同的是，Cross-Attention利用电压经线性映射得到矩阵$V, K$，利用电导率分布的隐变量经过线性变换得到矩阵$Q$，
-从而利用求出$K$和$Q$的相关性矩阵，进一步与电压分布引导的矩阵V（value）计算出带权和，将电压分布由带权和的方式嵌入代表电导率分布的隐变量中。
-值得一提的是，由于电导率分布为2维矩阵，而电压分布为1维向量，故在进行Cross-Attention之前首先表示将电导率分布的隐变量按照元素从左到右从上到下的顺序映射为1维向量，
+从而求出$K$和$Q$的相关性矩阵，进一步与电压分布引导的矩阵V（value）计算出带权和，将电压分布由带权和的方式嵌入代表电导率分布的隐变量中。
+
+值得一提的是，由于电导率分布为2维矩阵，而电压分布为1维向量，故在进行Cross-Attention之前首先将表示电导率分布的隐变量按照元素从左到右从上到下的顺序映射为1维向量，
 然后再将其输入CrossAttentionBlock。
-利用CrossAttentionLayer，即可高效地将电压数据嵌入生成噪声的网络中，进而输出重建算法中所需要的特定噪声分布。
+利用CrossAttentionLayer，即可高效地将电压数据嵌入NoiseG中，进而输出重建算法中所需要的特定噪声分布。
 
 由此可得NoiseG的重建过程，如\cref{algorithm:ForwardDiffusion}。
 其中，$\text{TimeEmbedding}(t)$是时刻$t$ embedding之后的结果。
@@ -475,7 +476,7 @@ $\epsilon_\theta$即为本文所设计的噪声生成网络NoiseG。
     \label{algorithm:ForwardDiffusion}
 \end{algorithm}
 
-其中，$\mbs{x}_t, t$分别为时刻$t$以及$t$时刻的隐变量。$\mbs{v}$用于引导电导率分布的电压数据。
+其中，$\mbs{x}_t, t$分别为时刻$t$以及$t$时刻的隐变量。$\mbs{v}$是用于引导电导率分布的电压数据。
 
 
 
@@ -485,7 +486,7 @@ $\epsilon_\theta$即为本文所设计的噪声生成网络NoiseG。
 此部分利用一个解码器对重建结果进行解码，将数据映射到电导率分布空间中。其具体结构如\cref{figure:CCDecoder}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=0.8\textwidth]{CCDecoder.png}
+    \includegraphics[width=1\textwidth]{CCDecoder.png}
     \caption{CDecoder 网络结构}
     \label{figure:CCDecoder}
 \end{figure}
