@@ -192,40 +192,74 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
 
 
 
-\cref{figure:reconsresult}。
-\begin{figure}[h]
-    \centering
-    \includegraphics[width=.5\textwidth]{reconsresult.jpg}
-    \caption{重建结果}
-    \label{figure:reconsresult}
-\end{figure}
 
-其中第一列是原始的电导率分布图像，第二列是利用CNN重建后的结果，第三列则是本文所提出的EC-Diffusion重建算法所得到的结果。
-可以看出，该算法在对图像背景电导率以及边缘电导率的重建效果均明显优于利用CNN重建的图像。
 
 随后本文将该模型的最优参数与其他模型的结果作对比，如\cref{table:EvaluationNice}
 
 
 
+对于上述问题最直接的解决方案即通过物理模型得到不同电导率分布在场域内部不同位置的电压分布与电导率分布数据，从而利用这些物理模型数据训练EC-Diffusion 模型中的可学习参数。
+然而，该方法的可行性较低：
 
+首先，琼脂块的制作周期较长，并且琼脂块会与背景溶液发生离子交换，故物理模型会因为无法准确的设置电导率分布而产生误差。
+其次，由于电压数据在测量的过程中难免会产生各式各样的误差（包括EIT的系统误差以及外界干扰所导致的误差），而实际任务中无法准确估计这类误差导致的噪声，故该方法仍然有可能导致重建质量差。
+第三，由于琼脂块及易发生形变，故将多次设置在场域内部的不同位置实际操作难度大，并且可获得的数据量较小（由于每次测量需等待溶液稳定，由此也会产生一定量的误差），且数据集制作周期长。
+故本文将通过优化EC-Diffusion算法来解决这一问题。
+
+根据上述分析可知，测量电压数据的准确性是能否重建出高质量图像的关键。即对于同一扰动目标设置，EC-Diffusion算法对物理模型试验所采集到的电压数据的图像重建结果应该与其对仿真数据重建出的图像具有一致性。
+因此可分别对EC-Diffusion中的电压解码器VEncoder和Diffusion部分进行优化，使得其编码后的电压与电导率分布具有更强的相关性，同时该模型应当具有一定的抗噪性。
+后续将具体介绍本章对Encoder部分和Diffusion部分的优化设计，并评对该算法优化后的性能进行分析和评估。
+
+
+CNN & 0.3775 & 13.7632 \\
+
+
+上一节中通过EIT物理模型实验得到了不通电导率的扰动目标的EIT边界电压测量值，本节将利用测量结果以及EC-Diffusion算法重建出其对应的电导率分布图像，
+并对重建结果作出分析，指出其存在的问题与可能的解决方案。
+
+利用EC-Diffusion算法重建出上一节获得的EIT测量电压值所对应的电导率分布部分图像如\cref{figure:DRECONS}所示。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{DRECONS.PNG}
+    \caption{EIT物理模型实验的图像重建结果}
+    \label{figure:DRECONS}
+\end{figure}
+
+
+
+
+\xsection{EC-Diffusion算法中VEncoder模块的优化}{Optimization of VEncoder Module in EC-Diffusion Algorithm}
+EC-Diffusion算法中，VEncoder用于对EIT边界电压数据进行编码，因此VEncoder模块的性能将直接影响到Diffusion模块是否能重建出高质量的电导率分布结果。
+因此，文节将提出一个优化VEncoder的方案，随后分析并评估优化后的VEncoder的编码性能。
+
+\xsubsection{VEncoder的优化策略}{Optimization Strategy of VEncdoer}
+
+
+分析网络结构可得，
+除了必要的模块外，VEncoder模块中的全连接网络大大降低了该算法的运行效率以及空间利用率。而利用RBF-CNN实现的VEncoder明显提高了算法的时间空间利用率，具体分析如下：
+
+首先，分别计算了原始编码器FCN-VEncoder 和RBF-CNN-VEncoder的参数数量，并比较了两者的时间性能，如\cref{table:RBFCNNTime}所示。
 \begin{table}[H]
-  
-    
-    \caption{各模型最优参数对比}
-    \begin{tblr}{
-        colspec = {X[c] X[c] X[c]},
-    }
-    \toprule
-    算法类型 & CC & RE($\times 10^{-5}$) \\
-    \midrule
-    EC-Diffusion & 0.9780 & 2.1073 \\
-    CNN+RBFNN(Adam) & 0.9665 & 4.7563 \\
-    CNN(Adam) & 0.3775 & 13.7632 \\
-    \bottomrule
+    \centering
+    \caption{网络评估}
+    \label{table:RBFCNNTime}
+    \begin{tblr}{colspec={X[c] X[c] X[c] X[c]}}
+        \toprule
+        模型类型 & 参数量 & 完成一次推断所需的平均时间(s) & 完整的模型完成一次推断所需的平均时间(s) \\
+        \midrule
+        RBF-CNN-VEncoder &1084160 & 0.0085s & 0.1613s \\ 
+        FCN-VEncoder & 33554432 & 0.0311s & 0.1877s \\
+        \bottomrule
     \end{tblr}
-    \label{table:EvaluationNice}
 \end{table}
 
-其中，EC-Diffusion为本文所提出的生成式EIT图像重建算法，CNN+RBFNN(Adam)和CNN(Adam)为\cite{RBFEIT}所提出的重建算法，
-这里均已选择每种模型可能的最优参数来做比较。
-可以看出，本文所提出的EC-Diffusion图像重建算法各项指标均高于其他算法。
+根据该结果可以看出，利用RBF-CNN实现的电压编码器不但具有更好的特征提取能力，同时其空间开销大约是FCN-VEncoder空间开销的32.31\%，
+且时间开销约是原先编码器的27.33\%，以使得整个算法加快了约14.06\%。
+
+
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.3\textwidth]{RBF_cond.png}
+    \caption{EIT仿真结果}
+    \label{figure:RBF_cond}
+\end{figure}

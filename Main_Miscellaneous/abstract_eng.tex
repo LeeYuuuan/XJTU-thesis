@@ -2,39 +2,43 @@
 % !TeX root = ../main.tex
 \begin{englishabstract}
 
-    Stroke disease are the second leading causes of death all over the world, 
+    Stroke diseases are the second leading causes of death all over the world, 
     usually including ischemic stroke and hemorrhagic stroke corresponding to different treatment methods.
-    Therefore, the fast and pre-hospital detection of stroke has important research value. 
-    Electrical impedance tomography (EIT) is a novel type of medical imaging technology which is convenient, real time and non-radiation. 
+    
+    The fast and pre-hospital detection of stroke has important research value due to the existing of critical time-to-treatment window of stroke.  
+    Electrical Impedance tomography (EIT) is a novel type of medical imaging technology which is convenient, real-time and nonradiative. 
     EIT would be potentially used in the fast detection of the types of strokes because of the significant difference of the intracranial conductivity distributions in the different types of strokes. 
-    However, the lower reconstruction quality as well as the huge time cost of traditional EIT image reconstruction algorithm limit its development. 
+    However, due to the ill-conditioning nature of EIT inverse problem, traditional EIT image reconstruction algorithms usually have the lower reconstruction quality as well as the huge time cost, which limit its development. 
     In recent years, deep learning, especially deep generative model, has achieved remarkable results in the fields of image generation, image reconstruction, image super-resolution reconstruction and so on. 
-    In this paper, the generative EIT image reconstruction algorithm based on deep learning is implemented as well as the experiments are designed to verify the effectiveness of this algorithm for the fast detection of stroke. 
+    In this thesis, a deep generative EIT image reconstruction algorithm for fast detection of stroke is implemented as well as a EIT data generation strategy for simulating stroke patients is designed to verify the effectiveness and advance of the algorithm for fast detection of stroke.
     The main achievements and innovations of the research are as follows:
 
     An EIT image reconstruction algorithm based on generative model is proposed. 
-    Due to the low resolution and long reconstruction time of traditional EIT image reconstruction algorithm,
-    The current reconstruction algorithm of the target in the EIT measurement field is relativly slow as well as low-quality.
-    To solve this problem, this paper studies the EIT image reconstruction algorithm based on generative model.
-    Firstly, encoder is used to encode EIT data. 
-    Then the diffusion model is used as the main body of the reconstruction algorithm to reconstruct the encoded image.
-    Finally, the decoder is used to decode the reconstructed encoded image, and then the high-quality EIT image is reconstructed.
-The simulation results show that the algorithm can reconstruct high quality EIT conductivity distribution image, and can effectively distinguish the disturbance target with different conductivity distribution in different positions.
-It provides the basis for applying the algorithm to the experiment of physical model.
+    The reconstruction image resolution of traditional EIT imaging algorithm is low and the reconstruction time is long.
+    Therefore, this research is focus on generative EIT image reconstruction algorithm to solve these problems.
+    An EIT image reconstruction algorithm for fast detection of stroke is designed.
+    The main body of the algorithm is implemented in a multi-block deep learning model, which consists an encoder, 
+    a decoder and an image reconstruction block based on an improved diffusion model, 
+    Then simulation experiments are designed to train and evaluate the mode. 
+    The simulation results show that the proposed algorithm can reconstruct high quality EIT conductivity distribution image,
+    as well as can effectively distinguish the disturbance targets with different conductivity distribution in different positions,
+    which provide the basis for applying this algorithm to real EIT physical model.
+    A data generation strategy is designed in this thesis, since different types of stroke lesion have different conductivity.
+    AGAR blocks with different sizes and different conductivity are made by using AGAR materials to simulate the lesion areas of hemorrhage and ischemic stroke respectively.
 
-Aiming at the task of fast detection of stroke, physical experiments are designed and the effectiveness of the algorithm is verified.
-Since different types of stroke usually have different conductivity,  in this paper, 
-AGAR blocks with different sizes and different conductivity were made to simulate different types of stroke. 
-Then the boundary voltage data of different types and sizes of stroke were collected by using the EIT measurement system and the designed 
-background field. Finally, the conductivity distributions of different stroke types were reconstructed using the algorithm proposed in the previous section.
-Then, the difference between the voltage distribution in the physical model experiment and that in the simulation experiment was verified, and the image reconstruction algorithm proposed in this paper was improved according to the difference. Finally, the conductivity distribution of different types of stroke was reconstructed by using the optimized algorithm.
-The experimental results show that the optimized reconstruction algorithm can effectively distinguish the conductivity distribution corresponding to different disturbance targets in the EIT physical model.
+    A physical model experiment is designed and a data generation strategy is proposed for the task of fast detection of stroke.
+    Then, the overall performance of the algorithm as well as the performance of each blocks are analyzed by the data simulating from software and generating from physical model experiment, 
+    which clarifies the effectiveness and advancement of the algorithm on the real physical model.
+    Then the EIT physical model experiment is designed and used to collect and generate the EIT data of stroke patients. 
+    Finally, the EIT image reconstruction algorithm proposed in this thesis is analyzed and evaluated with relevant data, 
+    and the necessity and advancement of each module are explained. 
+    The experimental results show that the EIT image reconstruction algorithm proposed in this thesis can reconstruct high quality EIT images,
+    as well as effectively distinguish the disturbance targets with different conductivity in the real EIT physical model, which can be used for fast detection of stroke.
 
-The final results show that the proposed generative EIT image reconstruction algorithm for stroke can reconstruct high quality EIT conductivity distribution image,
-which lays a foundation for the subsequent research on the application of generative model in EIT image reconstruction algorithm.
-In addition, the algorithm optimized for the physical model can effectively distinguish the disturbance targets with different conductivity distributions, 
-which can distinguish different types of stroke lesion areas, providing a technical basis for subsequent clinical trials.
-%\footnotetext{*The work was supported by the Foundation (foundation ID).}
+    The final results show that the generative EIT image reconstruction algorithm proposed in this thesis for 
+    fast detection of stroke can reconstruct high-quality EIT conductivity distribution, which means it can distinguish focal areas of different types of stroke.
+    It provides the technical basis for the follow-up clinical experiments, as well as lays a foundation for the subsequent application of the generative model in the researcn of EIT image reconstruction algorithm.
+    %\footnotetext{*The work was supported by the Foundation (foundation ID).}
     % \astfootnote{The work was supported by the Foundation (foundation ID).}
     %\blindtext
 

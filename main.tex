@@ -12,7 +12,7 @@
 %% 选择论文的基本类型
 
 \documentclass[
-    master, blind    % 必选项：   {master, doctor} 此处不区分专业/学术学位，在下面学位类型处区分
+    master    % 必选项：   {master, doctor} 此处不区分专业/学术学位，在下面学位类型处区分
                 % Mandatory: {master, doctor} No difference between Academic degree and Professional degree,
                 %                             but be careful about arguments in `\degree' and `\subject'
     % english,  % 可选项：   英文正文请选择此项
@@ -174,7 +174,7 @@
 
 % 致谢 修改 Main_Miscellaneous/acknowledegment.tex 中的内容
 % Acknowledgement, Rewrite your content in Main_Miscellaneous/acknowledegment.tex
-%\thesisacknowledegment
+\thesisacknowledegment
 
 % [自动生成] 参考文献
 %    默认使用 References/reference.bib，手动指定请在导言区 \addbibresource 处指定数据库。
@@ -191,16 +191,16 @@
 % 添加 [auto] 参数则读取通过 \addachivementresource 添加的数据库，否则读取 Main_Miscellaneous/achievement.tex 的内容 注意盲审时需要手动修改格式
 % 自动读取的数据库中 若条目含有 AUTHOR+an = {X=highlight} 则第 X 位作者会被加粗
 % Achievement, argument [auto] will load data from database added by \addachivementresource, or the data from Main_Miscellaneous/achievement.tex
-\thesisachivements
-%\thesisachivements[auto]
+%\thesisachivements
+\thesisachivements[auto]
 
 % 答辩委员会决议 修改 Main_Miscellaneous/decision.tex 中的内容
 % Decision, Rewrite your content in Main_Miscellaneous/decision.tex
-\thesisdecision
+%\thesisdecision
 
 % [自动生成] 常规评阅人名单 需要手动指定两个数字作为'本学位论文共接受 {#1} 位专家评阅，其中常规评阅人 {2}名'内容参数
 % [Auto Generate] Reviewer List, set two number as the content in this page 
-\thesisreviewers{7}{5}
+\thesisreviewers{2}{5}
 
 % [自动生成] 独创性声明
 % [Auto Generate] Originality Declaration

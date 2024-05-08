@@ -4241,69 +4241,6 @@
       \endverb
       \keyw{2014Adam,references}
     \endentry
-    \entry{2014Neural}{article}{}
-      \name{author}{3}{}{%
-        {{hash=6d80adec79a13a33e73215c5f46f1605}{%
-           family={Bahdanau},
-           familyi={B\bibinitperiod},
-           given={Dzmitry},
-           giveni={D\bibinitperiod}}}%
-        {{hash=3da7501a79d9346572c7fd6e41b615df}{%
-           family={Cho},
-           familyi={C\bibinitperiod},
-           given={Kyunghyun},
-           giveni={K\bibinitperiod}}}%
-        {{hash=40a8e4774982146adc2688546f54efb2}{%
-           family={Bengio},
-           familyi={B\bibinitperiod},
-           given={Yoshua},
-           giveni={Y\bibinitperiod}}}%
-      }
-      \name{namea}{3}{}{%
-        {{hash=6d80adec79a13a33e73215c5f46f1605}{%
-           family={Bahdanau},
-           familyi={B\bibinitperiod},
-           given={Dzmitry},
-           giveni={D\bibinitperiod}}}%
-        {{hash=3da7501a79d9346572c7fd6e41b615df}{%
-           family={Cho},
-           familyi={C\bibinitperiod},
-           given={Kyunghyun},
-           giveni={K\bibinitperiod}}}%
-        {{hash=40a8e4774982146adc2688546f54efb2}{%
-           family={Bengio},
-           familyi={B\bibinitperiod},
-           given={Yoshua},
-           giveni={Y\bibinitperiod}}}%
-      }
-      \list{language}{1}{%
-        {english}%
-      }
-      \strng{namehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
-      \strng{fullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \strng{bibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \strng{authorbibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \strng{authornamehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
-      \strng{authorfullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \strng{nameabibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \strng{nameanamehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
-      \strng{nameafullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{journaltitle}{Computer Science}
-      \field{langid}{english}
-      \field{languageid}{english}
-      \field{lansortorder}{4}
-      \field{title}{Neural Machine Translation by Jointly Learning to Align and Translate}
-      \field{usera}{J}
-      \field{userd}{english}
-      \field{userf}{english}
-      \field{year}{2014}
-      \field{dateera}{ce}
-      \keyw{2014Neural,references}
-    \endentry
     \entry{CondDDPM}{inproceedings}{}
       \name{author}{5}{}{%
         {{hash=6e9980f59f8c0c828cbeeb38981b48bc}{%
@@ -4459,8 +4396,8 @@
       \strng{nameabibnamehash}{349136285677176640b3a6d69c98def0}
       \strng{nameanamehash}{b5bfcd95459df0d66c58a299cbec3e9a}
       \strng{nameafullhash}{c1e635e3f33ee547be2644eb3d687673}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{5}
+      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{booktitle}{2022 IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR)}
@@ -4479,6 +4416,69 @@
       \verb 10.1109/CVPR52688.2022.01042
       \endverb
       \keyw{Training;Visualization;Image synthesis;Computational modeling;Noise reduction;Superresolution;Process control;Image and video synthesis and generation,references}
+    \endentry
+    \entry{2014Neural}{article}{}
+      \name{author}{3}{}{%
+        {{hash=6d80adec79a13a33e73215c5f46f1605}{%
+           family={Bahdanau},
+           familyi={B\bibinitperiod},
+           given={Dzmitry},
+           giveni={D\bibinitperiod}}}%
+        {{hash=3da7501a79d9346572c7fd6e41b615df}{%
+           family={Cho},
+           familyi={C\bibinitperiod},
+           given={Kyunghyun},
+           giveni={K\bibinitperiod}}}%
+        {{hash=40a8e4774982146adc2688546f54efb2}{%
+           family={Bengio},
+           familyi={B\bibinitperiod},
+           given={Yoshua},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \name{namea}{3}{}{%
+        {{hash=6d80adec79a13a33e73215c5f46f1605}{%
+           family={Bahdanau},
+           familyi={B\bibinitperiod},
+           given={Dzmitry},
+           giveni={D\bibinitperiod}}}%
+        {{hash=3da7501a79d9346572c7fd6e41b615df}{%
+           family={Cho},
+           familyi={C\bibinitperiod},
+           given={Kyunghyun},
+           giveni={K\bibinitperiod}}}%
+        {{hash=40a8e4774982146adc2688546f54efb2}{%
+           family={Bengio},
+           familyi={B\bibinitperiod},
+           given={Yoshua},
+           giveni={Y\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {english}%
+      }
+      \strng{namehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
+      \strng{fullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \strng{bibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \strng{authorbibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \strng{authornamehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
+      \strng{authorfullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \strng{nameabibnamehash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \strng{nameanamehash}{a19bd16ae98706ae8eced6dfd6ca3a14}
+      \strng{nameafullhash}{ccf5ebef61998aaab5ec6eace8f4564d}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{journaltitle}{Computer Science}
+      \field{langid}{english}
+      \field{languageid}{english}
+      \field{lansortorder}{4}
+      \field{title}{Neural Machine Translation by Jointly Learning to Align and Translate}
+      \field{usera}{J}
+      \field{userd}{english}
+      \field{userf}{english}
+      \field{year}{2014}
+      \field{dateera}{ce}
+      \keyw{2014Neural,references}
     \endentry
     \entry{2015U}{inproceedings}{}
       \name{author}{3}{}{%
@@ -4728,6 +4728,84 @@
       \verb https://proceedings.mlr.press/v139/radford21a.html
       \endverb
       \keyw{CLIP,references}
+    \endentry
+    \entry{5335289}{inproceedings}{}
+      \name{author}{4}{}{%
+        {{hash=ce2a58760a5e5a393ffe5b988b54f7de}{%
+           family={Chawla},
+           familyi={C\bibinitperiod},
+           given={Mayank},
+           giveni={M\bibinitperiod}}}%
+        {{hash=6aeef312cb41697230dc1429bfdeea53}{%
+           family={Sharma},
+           familyi={S\bibinitperiod},
+           given={Saurabh},
+           giveni={S\bibinitperiod}}}%
+        {{hash=2c6fe32d8b93bf8ad70526c48b7a8dc0}{%
+           family={Sivaswamy},
+           familyi={S\bibinitperiod},
+           given={Jayanthi},
+           giveni={J\bibinitperiod}}}%
+        {{hash=16229a2cd7ac0e04b372eea6c0281d65}{%
+           family={Kishore},
+           familyi={K\bibinitperiod},
+           given={L.\bibnamedelimi T},
+           giveni={L\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \name{namea}{4}{}{%
+        {{hash=ce2a58760a5e5a393ffe5b988b54f7de}{%
+           family={Chawla},
+           familyi={C\bibinitperiod},
+           given={Mayank},
+           giveni={M\bibinitperiod}}}%
+        {{hash=6aeef312cb41697230dc1429bfdeea53}{%
+           family={Sharma},
+           familyi={S\bibinitperiod},
+           given={Saurabh},
+           giveni={S\bibinitperiod}}}%
+        {{hash=2c6fe32d8b93bf8ad70526c48b7a8dc0}{%
+           family={Sivaswamy},
+           familyi={S\bibinitperiod},
+           given={Jayanthi},
+           giveni={J\bibinitperiod}}}%
+        {{hash=16229a2cd7ac0e04b372eea6c0281d65}{%
+           family={Kishore},
+           familyi={K\bibinitperiod},
+           given={L.\bibnamedelimi T},
+           giveni={L\bibinitperiod\bibinitdelim T\bibinitperiod}}}%
+      }
+      \list{language}{1}{%
+        {english}%
+      }
+      \strng{namehash}{2d2e1bc30637ac3e11d0ca4ac619b4dd}
+      \strng{fullhash}{8d58dc1b9ffd1b38ffd91873503c9c5a}
+      \strng{bibnamehash}{2e1ee5ff535dc40f75efbd21a6cd5d56}
+      \strng{authorbibnamehash}{2e1ee5ff535dc40f75efbd21a6cd5d56}
+      \strng{authornamehash}{2d2e1bc30637ac3e11d0ca4ac619b4dd}
+      \strng{authorfullhash}{8d58dc1b9ffd1b38ffd91873503c9c5a}
+      \strng{nameabibnamehash}{2e1ee5ff535dc40f75efbd21a6cd5d56}
+      \strng{nameanamehash}{2d2e1bc30637ac3e11d0ca4ac619b4dd}
+      \strng{nameafullhash}{8d58dc1b9ffd1b38ffd91873503c9c5a}
+      \field{sortinit}{6}
+      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{booktitle}{2009 Annual International Conference of the IEEE Engineering in Medicine and Biology Society}
+      \field{langid}{english}
+      \field{languageid}{english}
+      \field{lansortorder}{4}
+      \field{title}{A method for automatic detection and classification of stroke from brain CT images}
+      \field{usera}{C}
+      \field{userd}{english}
+      \field{userf}{english}
+      \field{year}{2009}
+      \field{dateera}{ce}
+      \field{pages}{3581\bibrangedash 3584}
+      \range{pages}{4}
+      \verb{doi}
+      \verb 10.1109/IEMBS.2009.5335289
+      \endverb
+      \keyw{Computed tomography;Hemorrhaging;Magnetic resonance imaging;Biomedical imaging;Blood vessels;Shape;Brain;Information technology;Histograms;USA Councils,references}
     \endentry
     \entry{RBFEIT}{inbook}{}
       \name{author}{6}{}{%
