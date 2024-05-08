@@ -189,3 +189,43 @@ $\gamma, \beta$是可学习的参数，用于对数据进行仿射变换。
 \cref{table:VAE_Voltage}中，每一行依次代表该网络中的每一层；第一列（层数）代表当前的层数，第二列（输入）和第四列（输出）
 分别表示改层输入的变量和输出的变量，第三列（网络类型）代表主要构成该层的网络类型。
 其中，第1、4、6、7为多层感知机，而$residue_1, residue_2$分别为残差项，用于实现残差结构，进一步加快网络收敛并防止梯度消失。
+
+
+
+\cref{figure:reconsresult}。
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=.5\textwidth]{reconsresult.jpg}
+    \caption{重建结果}
+    \label{figure:reconsresult}
+\end{figure}
+
+其中第一列是原始的电导率分布图像，第二列是利用CNN重建后的结果，第三列则是本文所提出的EC-Diffusion重建算法所得到的结果。
+可以看出，该算法在对图像背景电导率以及边缘电导率的重建效果均明显优于利用CNN重建的图像。
+
+随后本文将该模型的最优参数与其他模型的结果作对比，如\cref{table:EvaluationNice}
+
+
+
+
+\begin{table}[H]
+  
+    
+    \caption{各模型最优参数对比}
+    \begin{tblr}{
+        colspec = {X[c] X[c] X[c]},
+    }
+    \toprule
+    算法类型 & CC & RE($\times 10^{-5}$) \\
+    \midrule
+    EC-Diffusion & 0.9780 & 2.1073 \\
+    CNN+RBFNN(Adam) & 0.9665 & 4.7563 \\
+    CNN(Adam) & 0.3775 & 13.7632 \\
+    \bottomrule
+    \end{tblr}
+    \label{table:EvaluationNice}
+\end{table}
+
+其中，EC-Diffusion为本文所提出的生成式EIT图像重建算法，CNN+RBFNN(Adam)和CNN(Adam)为\cite{RBFEIT}所提出的重建算法，
+这里均已选择每种模型可能的最优参数来做比较。
+可以看出，本文所提出的EC-Diffusion图像重建算法各项指标均高于其他算法。

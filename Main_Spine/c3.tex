@@ -720,7 +720,7 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
 \cref{figure:CLIPLoss}所示，CEncoder和VEncoder网络在100次迭代后可很好的收敛。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.45\textwidth]{CLIPLoss.jpg}
+    \includegraphics[width=.6\textwidth]{CLIPLoss.jpg}
     \caption{数据编码块训练-测试Loss曲线}
     \label{figure:CLIPLoss}
 \end{figure}
@@ -756,7 +756,7 @@ NoiseG的训练过程如\cref{algorithm:TrainDDPM}所示，
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.45\textwidth]{DDPMLoss.PNG}
+    \includegraphics[width=.6\textwidth]{DDPMLoss.PNG}
     \caption{NoiseG训练-测试Loss曲线}
     \label{figure:DDPMLoss}
 \end{figure}
@@ -797,7 +797,7 @@ CDecoder的作用是将编码后的电导率分布尽最大可能还原成原始
 该网络的训练集-测试集loss如\cref{figure:DecoderLoss}所示。
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.45\textwidth]{DecoderLoss.png}
+    \includegraphics[width=.6\textwidth]{DecoderLoss.png}
     \caption{CDecoder训练-测试Loss曲线}
     \label{figure:DecoderLoss}
 \end{figure} 
@@ -854,49 +854,28 @@ CDecoder的作用是将编码后的电导率分布尽最大可能还原成原始
     \end{tblr}
     \label{table:Evaluation}
 \end{table}
-根据上述实验选择利用Adam优化器，且学习率为0.0001的条件下对EC-Diffusion为最佳模型
-（本文以最小化重建误差为核心目标，故没有选择学利率为0.00005时的模型）。
-则部分测试集中的重建结果如\cref{figure:reconsresult}。
+
 \begin{figure}[h]
     \centering
-    \includegraphics[width=.5\textwidth]{reconsresult.jpg}
+    \includegraphics[width=1\textwidth]{reconsresu.png}
     \caption{重建结果}
-    \label{figure:reconsresult}
+    \label{figure:reconsresu}
 \end{figure}
 
-其中第一列是原始的电导率分布图像，第二列是利用CNN重建后的结果，第三列则是本文所提出的EC-Diffusion重建算法所得到的结果。
-可以看出，该算法在对图像背景电导率以及边缘电导率的重建效果均明显优于利用CNN重建的图像。
+根据上述实验选择利用Adam优化器，且学习率为0.0001的条件下的EC-Diffusion为最佳模型
+（本文以最小化重建误差为核心目标，故没有选择学利率为0.00005时的模型）。
+则部分测试集中的重建结果如\cref{figure:reconsresu}。
 
-随后本文将该模型的最优参数与其他模型的结果作对比，如\cref{table:EvaluationNice}
 
-\begin{table}[H]
-  
-    
-    \caption{各模型最优参数对比}
-    \begin{tblr}{
-        colspec = {X[c] X[c] X[c]},
-    }
-    \toprule
-    算法类型 & CC & RE($\times 10^{-5}$) \\
-    \midrule
-    EC-Diffusion & 0.9780 & 2.1073 \\
-    CNN+RBFNN(Adam) & 0.9665 & 4.7563 \\
-    CNN(Adam) & 0.3775 & 13.7632 \\
-    \bottomrule
-    \end{tblr}
-    \label{table:EvaluationNice}
-\end{table}
 
-其中，EC-Diffusion为本文所提出的生成式EIT图像重建算法，CNN+RBFNN(Adam)和CNN(Adam)为\cite{RBFEIT}所提出的重建算法，
-这里均已选择每种模型可能的最优参数来做比较。
-可以看出，本文所提出的EC-Diffusion图像重建算法各项指标均高于其他算法。
+其中，Original为仿真数据设置的扰动目标图像，Reconstructed为利用EC-Diffusion算法重建后的EIT图像。可以看出，该算法能有效的重建出高质量的EIT图像，并能很好地区分扰动目标的大小、位置以及电导率分布的情况。
 
 
 \xsubsection{小结}{Summary}
 
 本章利用编码器-解码器以及改良的扩散概率模型，设计了一个用于脑卒中快速鉴别的生成式EIT图像重建算法。
 并利用仿真数据训练并验证了网络的有效性。结果表明，本文所提出的生成式EIT图像重建算法
-能有效地重建出高分辨率的EIT图像，为后续的物理模型实验提供了算法基础。
+能有效地重建出高分辨率的EIT图像，为后续将算法应用于脑卒中快速鉴别任务提供了理论基础。
 
 
 
