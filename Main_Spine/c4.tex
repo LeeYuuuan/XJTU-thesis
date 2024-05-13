@@ -1,14 +1,14 @@
 % !TeX root = ../main.tex
 
-\xchapter{用于脑卒中快速鉴别的EIT实验数据生成及算法性能分析}{Data Generation of EIT Physical Model for Fast Detection of Stroke and Analysis of Algorithm Performance}
+\xchapter{用于脑卒中快速鉴别的EC-Diffusion算法研究}{Research on  EC-Diffusion Algorithm for Fast Detection of Stroke}
 
 上一章通过EIDORS生成的仿真数据对本文提出的EC-Diffusion EIT图像重建算法中的可学习参数进行了训练和评估。结果表明，该算法能有效重建出高质量的EIT图像。
 然而，由于真实的EIT采集过程通常具有不确定性，即包含各种噪声。故绝大多数EIT图像重建算法通过实际的物理模型所获得的重建图像质量通常低于其在仿真模型上的结果。
 
-针对EIT图像重建算法的上述特点，本章首先针对脑卒中快速鉴别任务设计了EIT物理模型实验，随后提出了一种EIT数据生成策略，用于生成模拟脑卒中患者的EIT数据。最后利用仿真数据以及物理模型实验数据分析EC-Diffusion算法的性能，并与同类先进算法作对比，验证了其有效性和先进性。
+针对EIT图像重建算法的上述特点，本章首先针对脑卒中快速鉴别任务设计了EIT物理模型实验，随后提出了一种EIT数据生成策略，用于生成模拟脑卒中患者的EIT数据。最后利用仿真数据以及物理模型实验数据研究了EC-Diffusion算法的性能以及泛化性，并与同类先进算法作对比，验证了其有效性和先进性。
 并为后续展开临床实验奠定基础。
 
-\xsection{EIT物理模型实验设计}{Design of Experiment of EIT Physical Model}
+\xsection{EIT物理模型实验策略研究}{Research on Experiment of EIT Physical Model}
 由于EIT物理模型实验的设计方式种类繁多，其实验目的也各不相同，因此本节首先对脑卒中快速鉴别任务做出定量分析，随后针对该任务设计了EIT物理模型实验，
 为后续生成用于模拟脑卒中患者的EIT数据提供实验基础。
 
@@ -144,9 +144,9 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 
 
 
-\xsection{EIT物理模型实验数据生成}{Generation of EIT Physical Model Experiment}
-上一节针对脑卒中快速鉴别任务，设计了一个EIT物理模型实验。
-本节将利用上一节设计的EIT物理模型实验，生成一组EIT物理模型实验数据，用于模拟脑卒中患者的EIT数据。
+\xsection{EIT物理实验数据生成策略研究}{Research on Data Generation Strategy of EIT Physical Experiment}
+上一节针对脑卒中快速鉴别任务，设计了一个EIT物理模型实验。本节将对其用于EIT图像重建算法的可行性作出研究，并深入研究了其应用在EIT图像重建算法上的方式。
+利用上一节设计的EIT物理模型实验，生成一组EIT物理模型实验数据，用于模拟脑卒中患者的EIT数据。
 
 
 \xsubsection{EIT物理模型实验数据采集}{Data Acquisition of EIT Physical Model Experiment}
@@ -181,7 +181,7 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
 
 经上述采集流程后，共获得50组EIT电位数据以及其对应的电导率分布（通过相机拍摄得到的RGB图像）。
 
-\xsubsection{EIT物理实验数据集生成}{Generation of EIT Physical Experiment Data}
+\xsubsection{EIT物理模型实验数据生成}{Generation of EIT Physical Model Experiment}
 \label{geneD}
 本文对上述测得的电位数据进行了分析。由于EIT采集设备所得到的电位向量为测量电极相对于0电位点的电位差，该分布与本文所提出的差分EIT重建算法重建目标不同，故还需要对采集到的数据进行处理。
 
@@ -232,7 +232,7 @@ EIT采集系统通常包括激励测量硬件系统、电极与导联系统，�
     \label{figure:PhyCond}
 \end{figure}
 
-\xsubsection{EIT物理实验数据分析与噪声生成器构建}{Analysis of EIT Physical Model Data and Construction of Noise Generator}
+\xsubsection{EIT物理实验数据与噪声生成器研究}{Research on EIT Physical Model Data and Construction of Noise Generator}
 \label{NoiseRob}
 由于EIT逆问题的病态性，传统的图像重建算法通常在物理模型数据中表现较差。而EIT正问题求解过程完备，且结果相对精确。故首先利用上一小节中生成的EIT电导率分布数据仿真出其边界电压分布，并将其与物理实验模型生成
 的电压数据比较，如\cref{figure:expvol}所示。
@@ -289,10 +289,10 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 可以看出，该网络能够很好的收敛，故验证了上述噪声生成器的可行性。
 
 
-\xsection{算法性能分析}{Analysis of Performance of Algorithm}
+\xsection{EC-Diffusion算法图像重建性能研究}{Research on Performance of Image Reconstruction of EC-Diffusion Algorithm}
 
 
-\xsubsection{EIT物理模型实验图像重建结果分析}{Image Reconstruction Results of EIT Physical Model Experiment}
+\xsubsection{EIT物理模型实验图像重建结果}{Image Reconstruction Results of EIT Physical Model Experiment}
 由于目前常见的基于深度学习的EIT图像重建算法大多利用判别式模型，且均使用到了卷积神经网络作为重建算法的主体，
 故本文从中选择了一个2024年提出的基于CNN和RBFNN的模型\cite{RBFEIT}（下文中简称CNN-Based算法），与EC-Diffusion算法作对比，则
 利用本文所提出的EC-Diffusion算法以及CNN-Based算法对EIT物理模型实验所采集到的电压数据进行重建，如\cref{figure:Reconsresexp}所示：
@@ -300,7 +300,7 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=.9\textwidth]{Reconsresexp.PNG}
+    \includegraphics[width=.9\textwidth]{Reconsresexp.png}
     \caption{EIT物理实验结果}
     \label{figure:Reconsresexp}
 \end{figure}
@@ -368,8 +368,8 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 可以看出，本文所提出的EC-Diffusion图像重建算法各项指标均高于目前先进的算法。
 
 
-\xsubsection{EC-Diffusion算法对于噪声的鲁棒性分析}{Robustness Analysis of EC-Diffusion Algorithm for Noise}
-根据上一小节的内容可以看出，本文所提出的EC-Diffusion算法在抗噪性上明显优于CNN-Based算法，故本节将利用仿真数据深入分析该算法的抗噪性能，进一步说明该算法对于脑卒中快速鉴别任务的先进性。
+\xsubsection{EC-Diffusion算法对于噪声的鲁棒性研究}{Research on Robustness of EC-Diffusion Algorithm for Noise}
+根据上一小节的内容可以看出，本文所提出的EC-Diffusion算法在抗噪性上明显优于CNN-Based算法，故本节将利用仿真数据深入研究该算法的抗噪性能，进一步说明该算法对于脑卒中快速鉴别任务的先进性。
 
 
 具体而言，通过向电压数据种加入随机噪声，使得其电压数据含有噪声分布，
@@ -432,13 +432,13 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 可以看出，该算法在不同的信噪比下均可重建出高质量的EIT图像，并能够准确识别出扰动目标的电导率分布。
 故EC-Diffusion算法对于噪声具有很强的鲁棒性，可有效应用于脑卒中快速鉴别的EIT图像重建任务中。
 
-\xsubsection{编码器性能分析}{Analysis of Encoder}
+\xsubsection{编码器性能研究}{Research on Performance on Encoder}
 
 本文所采用的EC-Diffusion模型中的VEncoder利用RBF-CNN结构实现，本节将首先分析RBF-CNN对于EIT电压数据的特征提取能力，从而说明RBF-CNN实现的VEncoder具有更强的特征提取能力。
 随后对其时间、空间性能进行了分析，表明该模型能有效提高时间、空间利用率。
 最后还对该编码器与EC-Diffusion模型中CEncoder所产生的编码结果之间的相关性进行分析，通过编码后的结果之间相关性的提高进一步验证了编码器-解码器的必要性。
 
-\subsubsection{特征提取能力分析}
+\subsubsection{特征提取能力研究}
 
 为验证该RBF-CNN对于EIT电压数据的特征提取能力，本节利用该网络实现一个EIT逆问题求解器。只要该网络能重建出明显高质量的EIT图像，则证明该网络可以提取出能表达EIT电压数据有关其对应的电导率分布的特征。
 
@@ -499,7 +499,7 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 
 然而，即使EC-Diffusion算法相较于EIT传统算法已具有显著的时间性能优势，该算法的网络训练过程仍然非常耗时，其各模块训练时长共计约40小时。
 
-\subsubsection{编码器所产生的中间结果分析}
+\subsubsection{编码器所产生的中间结果研究}
 除了通过图像重建效果反映其特征提取能力外，本节还对改进后的VEncoder以及第三章所提到的CEncoder得到的中间结果进行了分析。
 具体而言，通过编码器的输入指出了该编码器-解码器结构对于模型重建效果的提升。
 首先评估了该EIT重建任务中各个信号之间的相关性，如\cref{table:CoorSig}
@@ -556,7 +556,7 @@ EIT物理模型实验中，背景帧的电压数据中包含噪声信号，而�
 \xsection{小结}{Summary}
 
 
-本章提出了一种用于生成EIT物理模型实验数据的策略，并利用之生成了一组用于模拟脑卒中患者的EIT数据，随后利用该数据以及EIT仿真数据分析了EC-Diffusion算法的性能，并与同类型先进算法作对比，证明了其有效性和先进性。
-随后分析了该算法对于物理模型实验噪声的鲁棒性，并说明了EC-Diffusion模型中各个部分存在的必要性和有效性。
+本章深入研究了用于脑卒中快速鉴别的EIT图像重建算法。随后根据脑卒中任务的特点，提出了一种用于生成EIT物理模型实验数据的策略，并利用之生成了一组用于模拟脑卒中患者的EIT数据，随后利用该数据以及EIT仿真数据分析了EC-Diffusion算法的性能，并与同类型先进算法作对比，证明了其有效性和先进性。
+随后深入研究了该算法对于物理模型实验噪声的鲁棒性，并说明了EC-Diffusion模型中各个部分存在的必要性和有效性。
 结果表明，本文所提出的生成式EIT图像重建算法
-能有效地重建出高分辨率的EIT图像，能够应用于脑卒中快速鉴别任务中，为后续开展临床实验提供了理论基础
+能有效地重建出高分辨率的EIT图像，能够应用于脑卒中快速鉴别任务中，为后续开展临床实验提供了理论基础。
