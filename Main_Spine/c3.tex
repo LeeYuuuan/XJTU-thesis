@@ -1,33 +1,18 @@
 % !TeX root = ../main.tex
 
-\xchapter{生成式EIT图像重建算法的设计与实现}{Design and Implementation of Generative EIT Reconstruction Algorithm}
+\xchapter{生成式EIT图像重建算法研究}{Research on Generative EIT Reconstruction Algorithm}
+EIT图像重建算法由于其固有的病态性而导致其图像重建质量差、重建分辨率低。而生成式模型目前以广泛应用在图像重建、图像生成等领域。本章深入研究了EIT图像重建问题的难点以及将生成式模型应用在EIT图像重建算法上的可行性。
+并提出了一个生成式EIT图像重建算法。
+\xsection{EIT图像重建问题分析}{Analysis of EIT Image Reconstruction Problem}
 传统的EIT图像重建算法通常利用迭代的思想多次求解EIT正问题、逆问题，以不断最小化每一步求解的电压分布和真实电压分布之间的误差。
 这种做法通常消耗时间长，成像分辨率低。由于EIT正问题仿真模型完备，且相对精确，而常见的深度学习模型则需要大量的训练数据，
 因此基于深度学习的EIT图像重建模型大大提高了EIT图像重建算法的图像重建分辨率。
 并且由于训练好的深度学习模型正向推理的过程通常耗时较少，因而能显著提高图像重建算法的时间效率。
 这也为EIT技术实现床旁实时监测、院前疾病检测提供了技术保障。
 
-目前主流的利用深度学习技术实现的EIT图像重建算法通常以卷积神经网络的各种变体为模型基础，
-通过添加具有不同功能的模块来优化网络性能。
-此类方法通常使用判别式模型来实现。
-
-扩散概率模型，作为生成式模型的一种，近年来在图像生成领域已经取得了显著的成果。而EIT图像重建问题本质上是建立从电压分布到电导率分布的非线性映射，
-即可以看作是生成目标为电导率分布，且指导模型生成电导率分布的条件为电压分布的带条件的扩散概率模型。
-利用扩散模型实现的EIT图像重建算法由于其模型固有的优势而能更好地拟合电导率的原始概率分布。并且通过对扩散过程的改进，可
-以有效减少在推理过程中的采样次数，极大程度地缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
-
-本章将提出一个生成式EIT图像重建算法，并重点介绍其设计理念与实现过程。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
-模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
-
-
-\xsection{生成式EIT图像重建算法设计}{Design of Generative EIT Reconstruction Algorithm}
-
-
 EIT图像重建算法就是要利用场域边界电压-电流数据重构出其内部电导率分布。
 但是，电流的激励方式、电压信号的维度等都会影响到EIT图像重建算法的设计，并且同一类型的数据也包含多种表示方式（如电压可表示为矩阵形式和向量形式）。
 因此本节首先定性和定量地描述EIT图像重建问题，随后将提出一个生成式EIT图像重建算法。
-
-\xsubsection{EIT图像重建问题分析}{Analysis of EIT Image Reconstruction Problem}
 
 设如\cref{figure:xyz}所示的待测场$\Omega$所包含的剖分单元个数为$d_e$，边界为$\partial \Omega$。其边界的电极个数为$d_v$。
 EIT采集系统的激励模式为邻近激励，单次测量所有激励模式所构成的集合为$S_{stim}$，单次测量电流激励的次数为$n_m$；测量电压的模式为邻近差分，单次激励测量电压的维度为$d_{vm}$。
@@ -70,10 +55,25 @@ EIT重建的图像分辨率为$res_{row} \times res_{column}$。
     \label{table:param_stm}
 \end{table}
 
-\xsubsection{生成式EIT图像重建算法总述}{Overall of of Generative EIT Reconstruction Algorithm for Fast Detection of Stroke}
+目前主流的利用深度学习技术实现的EIT图像重建算法通常以卷积神经网络的各种变体为模型基础，
+通过添加具有不同功能的模块来优化网络性能。
+此类方法通常使用判别式模型来实现。
+
+扩散概率模型，作为生成式模型的一种，近年来在图像生成领域已经取得了显著的成果。而EIT图像重建问题本质上是建立从电压分布到电导率分布的非线性映射，
+即可以看作是生成目标为电导率分布，且指导模型生成电导率分布的条件为电压分布的带条件的扩散概率模型。
+利用扩散模型实现的EIT图像重建算法由于其模型固有的优势而能更好地拟合电导率的原始概率分布。并且通过对扩散过程的改进，可
+以有效减少在推理过程中的采样次数，极大程度地缩短了模型正向计算的过程，进而提高了EIT图像重建效率。
+
+本章将提出一个生成式EIT图像重建算法，并重点介绍其设计理念与实现过程。包括算法的流程、EIT图像重建模型总体的结构、模型各部分的结构和作用、
+模型训练集的设计和仿真、训练过程、训练结果以及对模型性能的评估和优化。
+
+
+\xsection{基于深度生成式模型的EIT图像重建算法}{EIT Reconstruction Algorithm Based-on Deep Generative Model}
 
 根据上一节所提出的EIT图像重建问题，本节提出了一个用于脑卒中快速鉴别的生成式EIT图像重建算法，
 由于其应用EC-Diffusion模型实现而命名为EC-Diffusion算法如\cref{algorithm:GeneAlgorithm}和\cref{figure:AlgorithmEIT}。
+
+
 \begin{figure}[h]
     \centering
     \includegraphics[width=.8\textwidth]{AlgorithmEIT.png}
@@ -110,7 +110,7 @@ EIT重建的图像分辨率为$res_{row} \times res_{column}$。
 将EIT边界差分电压数据输入至训练好的模型中，经过模型正向推理即可得到其内部电导率分布的图像。
 
 
-\xsection{EC-Diffusion模型的设计与实现}{Design and Implementation of the EC-Diffusion Model}
+
 
 EC-Diffusion模型是实现本文所提出的EIT图像重建算法的核心部分，故本节将首先介绍该模型的总体架构，
 随后将分别对该模型中电压编码块、图像重建块和图像后处理块的设计与实现展开详细的介绍。
@@ -336,7 +336,7 @@ $\mbs{x}_1, \mbs{x}_2,..,\mbs{x}_{t}$，$t=1:T$是第$t$步加噪声后的结果
 则进一步可以看出，只需要得到从$t$时刻到$t-1$时刻需要去掉的噪声$\epsilon_\theta(\mbs{x}_{t}, t, v)$，
 即可递推地重建出$t=0$时刻的原始电导率分布$\mbs{x}_0$。故只需要利用神经网络拟合出所需要添加噪声的网络即可推理出原始的数据分布。
 
-\subsubsection{图像重建块的实现}
+\subsubsection{图像重建块}
 
 根据上述设计，本文首先设计并实现了一个用生成噪声的网络NoiseG，以对隐变量去噪。
 随后按照如\cref{figure:ReconsModel}实现了上述模型。
@@ -521,7 +521,7 @@ $\epsilon_\theta$即为本文所设计的噪声生成网络NoiseG。
 
 
 
-\xsection{训练和测试数据集的设计与生成}{Design and Generation of the Dataset for Model Training and Testing}
+\xsection{训练和测试数据集的生成策略研究}{Research on Generation of Dataset for Model Training and Testing}
 
 本文所提出的生成式EIT图像重建算法的各部分具体结构均已在上节中作了阐述，该算法共包含了三个完整的神经网络，即：
 1） 数据编码块中的电压编码器VEncoder。
@@ -687,7 +687,7 @@ EDIORS 是一个为医学和工业环境中的电阻抗层析成像(EIT)和基�
 \end{algorithm}
 利用该算法所生成的电压-电导率数据集中的一个数据对如\cref{figure:cond_voltage}所示。
 
-\begin{figure}[H]
+\begin{figure}[h]
     \centering
     \includegraphics[width= .4\textwidth]{cond_voltage.png}
     \caption{生成的电压-电导率数据集示例}
